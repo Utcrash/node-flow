@@ -1,0 +1,39 @@
+Create a react app to mimic what n8n does but using reactflow. 
+
+1. Use reactflow to create a canvas and multiple nodes and basic functionalities.
+2. Have multiple kind of nodes like 
+    a. Trigger node - scheduled or manually
+    b. Filter, branch, loop, if nodes
+    c. Codeblock, http request nodes
+
+3. All these nodes (on click) should open a properties page which should have a general input/output structure, just like there are for n8n nodes. 
+
+4. Reactflow nodes, the handles in the node can be different in numbers for different kind of nodes, like "if" will have 1 target and 2 source nodes (true or false). 
+5. There can be nodes like loop which might have an additional node as temp, to be replaced by another node. 
+
+Iteration -1 
+
+
+1. The handles should be on the left and right rather than top and bottom. 
+2. Reducing the size of the nodes
+3. See why are the icons not coming for xy-flow
+4. Adding new node should be in 2 ways
+ a. The current way with a panel on the left
+ b. Every node should an arm with a plus icon, when clicked, a new node should be added. 
+
+ Iteration -2 
+
+ 1. In a node like if, the + sign will overlap with the 2 source handles. 
+ 2. On click of plus, it should ask which node to add rather than just going for a filter node. 
+ 3. Reduce the size of the nodes further and rather than having the type of node and blank space in 50-50 for a node, make a 30-70 
+
+
+ Iteration -3 
+
+ 1. In case there is a node like if with 2 sources, connect true to the next node when we click add. 
+ 2. Also, the plus icon should be outside the node. So if the node is a rectangle, there should be a line that should extend from the right and have a plus icon there. 
+ 
+ Iteration -4 
+
+ 1. Rather than having a popover when we click on add, show the side panel with the nodes. 
+ 2. The base screen should have a blank node with a plus screen in the middle which will eventually be replaced by the node. 

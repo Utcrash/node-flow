@@ -1,0 +1,198 @@
+:root {
+  --node-border-radius: 6px;
+  --node-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  --node-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --node-transition: all 0.15s ease;
+  --handle-size: 10px; /* Slightly larger handles for visibility */
+  --handle-bg: white;
+  --handle-border: 2px solid #555; /* Match node border */
+}
+
+.node {
+  background: white;
+  border: 2px solid var(--border-color, #555);
+  border-radius: var(--node-border-radius);
+  min-width: 120px;
+  max-width: 180px;
+  height: 60px; /* Increased from 48px for better handle spacing */
+  position: relative;
+  box-shadow: var(--node-shadow);
+  display: flex;
+  flex-direction: column;
+  transition: var(--node-transition);
+  overflow: visible; /* Changed: Prevent clipping handles */
+}
+
+.node:hover {
+  box-shadow: var(--node-shadow-hover);
+}
+
+.node.selected {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.3), var(--node-shadow-hover);
+}
+
+/* Handle overrides for visibility */
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  transition: var(--node-transition);
+  z-index: 4; /* Ensure above node */
+}
+
+/* Target handle (left/input) - rectangle */
+.react-flow__handle-left {
+  border-radius: 2px;
+  width: 6px;
+  height: 12px;
+}
+
+.react-flow__handle:hover {
+  background: #f5f5f5;
+  border-color: rgba(25, 118, 210, 0.4);
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, var(--header-bg, #f5f5f5) 0%, #fafafa 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  height: 30px; /* ~18px content + padding */
+  flex-shrink: 0;
+  border-radius: var(--node-border-radius) var(--node-border-radius) 0 0;
+}
+
+.node-icon {
+  font-size: 14px;
+  line-height: 1;
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  flex-shrink: 0;
+}
+
+.node-title {
+  font-weight: 600;
+  font-size: 11px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.node-body {
+  padding: 4px 10px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  font-size: 9px;
+}
+
+.node-info {
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Node type specific colors (unchanged) */
+.trigger-node { --border-color: #ff9800; --header-bg: #fff3e0; }
+.filter-node { --border-color: #2196f3; --header-bg: #e3f2fd; }
+.branch-node { --border-color: #4caf50; --header-bg: #e8f5e9; }
+.loop-node { --border-color: #9c27b0; --header-bg: #f3e5f5; }
+.if-node { --border-color: #f44336; --header-bg: #ffebee; }
+.codeblock-node { --border-color: #607d8b; --header-bg: #eceff1; }
+.http-request-node { --border-color: #00bcd4; --header-bg: #e0f7fa; }
+.placeholder-node {
+  border-color: #9e9e9e;
+  border-style: dashed;
+  opacity: 0.7;
+}
+.placeholder-node .node-header { --header-bg: #f5f5f5; }
+.placeholder-node .node-body { opacity: 0.7; }
+
+.handle-label {
+  position: absolute;
+  right: -45px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8px;
+  color: #888;
+  white-space: nowrap;
+  pointer-events: none;
+  font-weight: 500;
+}
+
+.node-add-arm {
+  position: absolute;
+  right: -35px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 1px;
+  background: transparent;
+  border-top: 1px dashed white;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.node-add-button {
+  position: absolute;
+  right: -50px; /* Extended to match longer arm */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: white;
+  color: #888;
+  font-size: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  line-height: 1;
+  padding: 0;
+  transition: var(--node-transition);
+}
+
+.node-add-button:hover {
+  transform: translateY(-50%) scale(1.1);
+  background: var(--header-bg, #f5f5f5);
+  border-color: #1976d2; /* Blue on hover for affordance */
+  color: #1976d2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.node-add-button:active {
+  transform: translateY(-50%) scale(0.95);
+  background: #eeeeee;
+}
+
+.node-add-button:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+/* Subtle handle hover effect */
+.node:hover .react-flow__handle {
+  border-color: rgba(25, 118, 210, 0.3);
+}
+
+/* Accessibility: Keyboard nav for button */
+.node-add-button:focus-visible {
+  outline: 2px solid #1976d2;
+}

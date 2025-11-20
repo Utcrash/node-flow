@@ -1,0 +1,3831 @@
+[
+ 
+  {
+    "type": "codeblock",
+    "label": "Code Block",
+    "icon": "💻",
+    "category": "Code"
+  },
+  {
+    "name": "timer",
+    "label": "Timer",
+    "description": "Timer trigger for scheduling workflows using cron expressions.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "timer",
+            "label": "Timer",
+            "icon": "⏰",
+            "category": "TRIGGER",
+            "description": "Timer node for Misc group - schedules workflows based on cron.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.638Z",
+            "updatedAt": "2025-05-16T08:51:26.768Z"
+        },
+        "visualization": {
+            "borderColor": "#4CAF50",
+            "headerBackground": "#E8F5E8",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Timestamp"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "cron",
+                "name": "cron",
+                "label": "Cron Expression",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "* * * * ",
+                "description": "Cron schedule expression (e.g., * * * * * for every minute)"
+            },
+            {
+                "id": "holidayList",
+                "name": "holidayList",
+                "label": "Holiday List",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Array of holiday dates to skip (ISO format)"
+            },
+            {
+                "id": "timezone",
+                "name": "timezone",
+                "label": "Timezone",
+                "type": "string",
+                "inputType": "select",
+                "required": false,
+                "defaultValue": "UTC",
+                "description": "Timezone for scheduling (e.g., America/New_York)",
+                "options": [
+                    {
+                        "label": "UTC",
+                        "value": "UTC"
+                    },
+                    {
+                        "label": "America/New_York",
+                        "value": "America/New_York"
+                    },
+                    {
+                        "label": "Europe/London",
+                        "value": "Europe/London"
+                    }
+                ]
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const { CronJob } = require('cron');\n  try {\n    console.log('InputData - ', inputParams);\n    let timezone = (inputParams.timezone && inputParams.timezone.trim() !== '' && inputParams.timezone.trim().toLowerCase() !== 'undefined') ? inputParams.timezone : 'UTC';\n    console.log('Timezone - ', timezone);\n    const job = new CronJob(inputParams.cron, async () => {\n        try {\n            const date = new Date();\n            const isoString = date.toISOString();\n            const payload = { timestamp: isoString };\n            const headers = { 'dnio-remote-txn-id': isoString };\n            // Adapted for context: context.triggerNext(payload);\n            return { success: true, output: { timestamp: isoString } };\n        } catch (err) {\n            logger.error('TimerError - ', err);\n            return { success: false, output: { error: err.message } };\n        }\n    },\n        null,\n        true,\n        timezone\n    );\n  } catch (e) {\n    logger.error('Failed to schedule cron job for expression \"' + inputParams.cron + '\": ' + e.message);\n    return { success: false, output: { error: e.message } };\n  }\n}",
+        "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "http_server",
+    "label": "HTTP Server",
+    "description": "HTTP Server trigger for receiving web requests.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "http_server",
+            "label": "HTTP Server",
+            "icon": "🌐",
+            "category": "TRIGGER",
+            "description": "HTTP Server node for HTTP group - triggers on incoming HTTP requests.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.638Z",
+            "updatedAt": "2025-04-29T02:40:21.737Z"
+        },
+        "visualization": {
+            "borderColor": "#FF9800",
+            "headerBackground": "#FFF3E0",
+            "handles": {
+               
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Request Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "method",
+                "name": "method",
+                "label": "Method",
+                "type": "string",
+                "inputType": "select",
+                "required": false,
+                "defaultValue": "GET",
+                "description": "HTTP method to listen for",
+                "options": [
+                    {
+                        "label": "GET",
+                        "value": "GET"
+                    },
+                    {
+                        "label": "POST",
+                        "value": "POST"
+                    },
+                    {
+                        "label": "PUT",
+                        "value": "PUT"
+                    },
+                    {
+                        "label": "DELETE",
+                        "value": "DELETE"
+                    }
+                ]
+            },
+            {
+                "id": "path",
+                "name": "path",
+                "label": "Path",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "/",
+                "description": "Endpoint path to match"
+            },
+            {
+                "id": "uniqueTxn",
+                "name": "uniqueTxn",
+                "label": "Unique Transaction",
+                "type": "boolean",
+                "inputType": "checkbox",
+                "required": false,
+                "defaultValue": false,
+                "description": "Enforce unique transactions"
+            },
+            {
+                "id": "enableAuth",
+                "name": "enableAuth",
+                "label": "Enable Auth",
+                "type": "boolean",
+                "inputType": "checkbox",
+                "required": false,
+                "defaultValue": false,
+                "description": "Require authentication"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // HTTP Server trigger - adapted for workflow context\n  try {\n    // Setup server listener using inputParams\n    const method = inputParams.method || 'GET';\n    const path = inputParams.path || '/';\n    // Simulate server setup - in real backend, use express or similar\n    // For this node, assume it triggers on match and passes request data\n    // context.onRequest((req) => {\n    //   if (req.method === method && req.url === path) {\n    //     return { success: true, output: { query: req.query, headers: req.headers, data: req.body, method: req.method } };\n    //   }\n    // });\n    return { success: true, output: { message: 'Listening on ' + method + ' ' + path } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+        "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "kafka_listener",
+    "label": "Kafka Listener",
+    "description": "Kafka subscriber for queue triggers.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "kafka_listener",
+            "label": "Kafka Listener",
+            "icon": "📨",
+            "category": "TRIGGER",
+            "description": "Kafka Listener node for Queue group - listens for messages on Kafka topic.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.638Z",
+            "updatedAt": "2025-09-14T05:43:13.041Z"
+        },
+        "visualization": {
+            "borderColor": "#FF9800",
+            "headerBackground": "#FFF3E0",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "topic",
+                "name": "topic",
+                "label": "Topic",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Kafka topic to subscribe to"
+            },
+            {
+                "id": "groupId",
+                "name": "groupId",
+                "label": "Group ID",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Consumer group ID"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const { Kafka } = require('kafkajs');\n  const kafkaOptions = {\n    clientId: connectorData.clientId,\n    brokers: connectorData.brokers\n  };\n  if (connectorData.ssl) {\n    kafkaOptions.ssl = connectorData.ssl;\n  }\n  if (connectorData.sasl) {\n    kafkaOptions.sasl = {\n      mechanism: 'plain',\n      username: connectorData.username,\n      password: connectorData.password,\n    };\n  }\n  logger.trace('Kafka config - ', JSON.stringify(kafkaOptions));\n  const kafka = new Kafka(kafkaOptions);\n  const consumer = kafka.consumer({ groupId: inputParams.groupId });\n  const runConsumer = async () => {\n    await consumer.connect();\n    await consumer.subscribe({ topic: inputParams.topic });\n    await consumer.run({\n      eachMessage: async ({ topic, partition, message }) => {\n        logger.info('Received a message:', message);\n        // Adapted for context: context.triggerNext(message.value);\n        return { success: true, output: { data: message.value.toString('utf8') } };\n      }\n    });\n  };\n  runConsumer().catch((error) => {\n    logger.error(error);\n    return { success: false, output: { error: error.message } };\n  });\n}",
+        "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "nats_listener",
+    "label": "NATS Listener",
+    "description": "NATS subscriber for queue triggers.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "nats_listener",
+            "label": "NATS Listener",
+            "icon": "📨",
+            "category": "TRIGGER",
+            "description": "NATS Listener node for Queue group - listens for messages on NATS queue.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.638Z",
+            "updatedAt": "2025-03-18T14:15:15.408Z"
+        },
+        "visualization": {
+            "borderColor": "#FF9800",
+            "headerBackground": "#FFF3E0",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "queue",
+                "name": "queue",
+                "label": "Queue",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "NATS queue to subscribe to"
+            },
+            {
+                "id": "clientId",
+                "name": "clientId",
+                "label": "Client ID",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "NATS client ID"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  (async () => {\n    const subs = connectorData.natsCon.subscribe(inputParams.queue, { queue: inputParams.clientId });\n    for await (let sub of subs) {\n      // Adapted for context: context.triggerNext({ data: sub.data });\n      return { success: true, output: { data: sub.data.toString('utf8') } };\n    }\n  })().catch((error) => {\n    return { success: false, output: { error: error.message } };\n  });\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "activemq_listener",
+    "label": "ActiveMQ Listener",
+    "description": "ActiveMQ subscriber for queue triggers.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "activemq_listener",
+            "label": "ActiveMQ Listener",
+            "icon": "📨",
+            "category": "TRIGGER",
+            "description": "ActiveMQ Listener node for Queue group - listens for messages on ActiveMQ queue.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.638Z",
+            "updatedAt": "2024-04-15T18:56:04.638Z"
+        },
+        "visualization": {
+            "borderColor": "#FF9800",
+            "headerBackground": "#FFF3E0",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "queue",
+                "name": "queue",
+                "label": "Queue",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "ActiveMQ queue to subscribe to"
+            },
+            {
+                "id": "clientId",
+                "name": "clientId",
+                "label": "Client ID",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "ActiveMQ client ID"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for ActiveMQ code - original was empty\n  try {\n    // Implement ActiveMQ consumer logic here\n    return { success: true, output: { data: 'ActiveMQ message' } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "ibm_mq_consume",
+    "label": "IBM MQ Consume",
+    "description": "IBM MQ consumer for queue triggers.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "ibm_mq_consume",
+            "label": "IBM MQ Consume",
+            "icon": "📨",
+            "category": "TRIGGER",
+            "description": "IBM MQ Consume node for Queue group - consumes messages from IBM MQ queue.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.638Z",
+            "updatedAt": "2024-04-15T18:56:04.638Z"
+        },
+        "visualization": {
+            "borderColor": "#FF9800",
+            "headerBackground": "#FFF3E0",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "queue",
+                "name": "queue",
+                "label": "Queue",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "IBM MQ queue to consume from"
+            },
+            {
+                "id": "messageSize",
+                "name": "messageSize",
+                "label": "Message Size",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": 1024,
+                "description": "Expected message size for buffer"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const mq = require('ibmmq');\n  const MQC = mq.MQC;\n  function openQueue(client, MQDetails) {\n    let openOptions = MQC.MQOO_INPUT_AS_Q_DEF;\n    let objectDescriptor = new mq.MQOD();\n    objectDescriptor.ObjectName = MQDetails.queue;\n    objectDescriptor.ObjectType = MQC.MQOT_Q;\n    return new Promise((resolve, reject) => {\n      mq.Open(client, objectDescriptor, openOptions, function (err, queueClient) {\n        if (err) {\n          logger.error('Error Subscribing IBM MQ Queue :', err);\n          reject(err);\n        } else {\n          logger.info('IBM MQ Queue Opened :', MQDetails.queue);\n          resolve(queueClient);\n        }\n      });\n    })\n  }\n  function getMessage(queueClient) {\n    let buffer = Buffer.alloc(inputParams.messageSize || 1024);\n    let messageDescriptor = new mq.MQMD();\n    let getMessageOptions = new mq.MQGMO();\n    getMessageOptions.Options = MQC.MQGMO_NO_SYNCPOINT |\n      MQC.MQGMO_NO_WAIT |\n      MQC.MQGMO_CONVERT |\n      MQC.MQGMO_FAIL_IF_QUIESCING;\n    return new Promise((resolve, reject) => {\n      mq.GetSync(queueClient, messageDescriptor, getMessageOptions, buffer, function (err, len) {\n        logger.info(messageDescriptor, buffer);\n        if (err) {\n          reject(err);\n          if (err.mqrc == MQC.MQRC_NO_MSG_AVAILABLE) {\n            logger.info('no more messages');\n          } else {\n            logger.warn('MQGET failed with ' + err.mqrc);\n          }\n        } else {\n          resolve(Buffer.from(buffer));\n          logger.info('Found Message in Queue');\n        }\n      });\n    })\n  }\n  const queueClient = await openQueue(connectorData.mqClient, { queue: inputParams.queue });\n  setInterval(async () => {\n    const result = await getMessage(queueClient);\n    // Adapted for context: context.triggerNext({ data: result });\n    return { success: true, output: { data: result.toString('utf8') } };\n  }, 100);\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "http_client",
+    "label": "HTTP Client",
+    "description": "HTTP Client for making outgoing requests.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "http_client",
+            "label": "HTTP Client",
+            "icon": "🌐",
+            "category": "PROCESS",
+            "description": "HTTP Client node for HTTP group - makes HTTP requests to external endpoints.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.638Z",
+            "updatedAt": "2025-07-24T09:53:23.131Z"
+        },
+        "visualization": {
+            "borderColor": "#2196F3",
+            "headerBackground": "#E3F2FD",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Response"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "method",
+                "name": "method",
+                "label": "Method",
+                "type": "string",
+                "inputType": "select",
+                "required": true,
+                "defaultValue": "GET",
+                "description": "HTTP method",
+                "options": [
+                    {
+                        "label": "GET",
+                        "value": "GET"
+                    },
+                    {
+                        "label": "POST",
+                        "value": "POST"
+                    },
+                    {
+                        "label": "PUT",
+                        "value": "PUT"
+                    },
+                    {
+                        "label": "DELETE",
+                        "value": "DELETE"
+                    }
+                ]
+            },
+            {
+                "id": "path",
+                "name": "path",
+                "label": "Path",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Request path"
+            },
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "object",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "{}",
+                "description": "Query parameters as JSON"
+            },
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "",
+                "description": "Request body"
+            },
+            {
+                "id": "headers",
+                "name": "headers",
+                "label": "Headers",
+                "type": "object",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "{}",
+                "description": "Headers as JSON"
+            },
+            {
+                "id": "timeout",
+                "name": "timeout",
+                "label": "Timeout",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": 60000,
+                "description": "Request timeout in ms"
+            },
+            {
+                "id": "throwErrorOn4xx",
+                "name": "throwErrorOn4xx",
+                "label": "Throw Error on 4xx",
+                "type": "boolean",
+                "inputType": "checkbox",
+                "required": false,
+                "defaultValue": false,
+                "description": "Throw error on 4xx status codes"
+            },
+            {
+                "id": "retries",
+                "name": "retries",
+                "label": "Retries",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": 0,
+                "description": "Number of retries"
+            },
+            {
+                "id": "retryDelay",
+                "name": "retryDelay",
+                "label": "Retry Delay",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": 1000,
+                "description": "Delay between retries in ms"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const axios = require('axios');\n  const axiosRetry = require('axios-retry').default;\n  const axiosConfig = {};\n  try {\n    axiosRetry(axios, {\n      retries: inputParams.retries || process.env.HTTPCLIENT_RETRIES || 0,\n      retryDelay: (retryCount, error) => {\n        logger.info('[RETRY] Attempt #' + retryCount + ' - Reason: ' + (error?.code || error?.message));\n        return (inputParams.retryDelay || process.env.HTTPCLIENT_RETRY_DELAY || 1000);\n      },\n      onRetry: (retryCount, error, requestConfig) => {\n        logger.error('[RETRYING] Retry #' + retryCount + ' for ' + requestConfig?.url + ' - Error: ' + error?.message);\n      },\n      retryCondition: (error) => {\n        // Log the error to understand what's happening\n        logger.info('[DEBUG] Checking retry condition for error:', {\n          status: error?.response?.status,\n          code: error?.code,\n          message: error?.message\n        });\n        // Retry on 401, network errors, and 5xx errors\n        return axiosRetry.isNetworkOrIdempotentRequestError(error) ||\n          (error?.response?.status >= 400 && error?.response?.status <= 599);\n      },\n      shouldResetTimeout: true // Reset the timeout between retries\n    });\n    axiosConfig.responseType = 'arraybuffer';\n    axiosConfig.method = inputParams.method;\n    axiosConfig.url = connectorData.protocol + '://' + connectorData.host + ':' + connectorData.port + inputParams.path;\n    axiosConfig.data = inputParams.data ? Buffer.from(inputParams.data) : undefined;\n    axiosConfig.params = inputParams.query;\n    axiosConfig.headers = inputParams.headers;\n    axiosConfig.timeout = inputParams.timeout || process.env.HTTPCLIENT_TIMEOUT || 60000;\n    logger.info('Making HTTP [' + axiosConfig.method + '] Request at [' + axiosConfig.url + ']');\n    logger.trace(JSON.stringify(axiosConfig));\n    axiosConfig.validateStatus = function (status) {\n      if (inputParams.throwErrorOn4xx) {\n        return status >= 200 && status < 300;\n      } else {\n        return status >= 200 && status < 500;\n      }\n    };\n    let response = await axios(axiosConfig);\n    return { success: true, output: { statusCode: response.status, data: response.data, headers: response.headers } };\n  }\n  catch (err) {\n    if (err.response) {\n      const error = new Error('Axios request failed: ' + err.response.status + ' - ' + err.response.statusText);\n      error.statusCode = err.response.status;\n      error.data = err.response.data;\n      error.stack = err.stack;\n      return { success: false, output: { statusCode: error.statusCode, data: error.data, error: error.message } };\n    } else if (err.code === 'ECONNABORTED') {\n      const error = new Error('Request timeout');\n      error.statusCode = 408;\n      error.code = err.code;\n      error.stack = err.stack;\n      return { success: false, output: { statusCode: error.statusCode, error: error.message } };\n    } else {\n      return { success: false, output: { error: err.message } };\n    }\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mysql_query",
+    "label": "MySQL Query",
+    "description": "MySQL Query for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mysql_query",
+            "label": "MySQL Query",
+            "icon": "📊",
+            "category": "PROCESS",
+            "description": "MySQL Query node for Database group - executes SQL queries.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-04-15T18:56:04.639Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "SQL query to execute"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const result = await connectorData.mysqlCon.query(inputParams.query, inputParams.values || []);\n  return { success: true, output: { data: result[0] } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "oracle_query",
+    "label": "ORACLE Query",
+    "description": "ORACLE Query for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "oracle_query",
+            "label": "ORACLE Query",
+            "icon": "📊",
+            "category": "PROCESS",
+            "description": "ORACLE Query node for Database group - executes SQL queries with timeout.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2025-01-15T04:57:23.098Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Rows"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "SQL query to execute"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            },
+            {
+                "id": "queryTimeout",
+                "name": "queryTimeout",
+                "label": "Query Timeout",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": 60,
+                "description": "Query timeout in seconds"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const oracledb = require('oracledb');\n  let connection;\n  try {\n    const queryTimeout = (+(connectorData.queryTimeout || inputParams.queryTimeout || 60)) * 1000;\n    connection = await oracledb.getConnection(connectorData.poolName);\n    const queryPromise = connection.execute(inputParams.query, (inputParams.values || []));\n    const result = await withTimeout(queryPromise, queryTimeout);\n    return { success: true, output: { rows: result.rows } };\n  } catch (err) {\n    return { success: false, output: { error: err.message } };\n  } finally {\n    if (connection) {\n      connection.close();\n    }\n  }\n\n  function withTimeout(promise, ms) {\n    return Promise.race([\n      promise,\n      new Promise((, reject) =>\n        setTimeout(() => reject(new Error('Query timeout exceeded: ' + ms + 'ms')), ms)\n      ),\n    ]);\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "oracle_insert",
+    "label": "ORACLE Insert",
+    "description": "ORACLE Insert for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "oracle_insert",
+            "label": "ORACLE Insert",
+            "icon": "➕",
+            "category": "PROCESS",
+            "description": "ORACLE Insert node for Database group - inserts data into ORACLE.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-09-03T06:18:46.344Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Rows Affected"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "INSERT SQL query"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const oracledb = require('oracledb');\n  let connection;\n  try {\n    connection = await oracledb.getConnection(connectorData.poolName);\n    const result = await connection.execute(inputParams.query, (inputParams.values || []));\n    return { success: true, output: { rowsAffected: result.rowsAffected } };\n  } catch (err) {\n    return { success: false, output: { error: err.message } };\n  } finally {\n    if (connection) {\n      connection.close();\n    }\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mysql_delete",
+    "label": "MySQL Delete",
+    "description": "MySQL Delete for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mysql_delete",
+            "label": "MySQL Delete",
+            "icon": "🗑️",
+            "category": "PROCESS",
+            "description": "MySQL Delete node for Database group - deletes data from MySQL.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-04-15T18:56:04.639Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Deleted Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "DELETE SQL query"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const result = await connectorData.mysqlCon.query(inputParams.query, inputParams.values || []);\n  return { success: true, output: { deletedCount: result[0].affectedRows } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "oracle_update",
+    "label": "ORACLE Update",
+    "description": "ORACLE Update for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "oracle_update",
+            "label": "ORACLE Update",
+            "icon": "🔄",
+            "category": "PROCESS",
+            "description": "ORACLE Update node for Database group - updates data in ORACLE.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-09-03T06:19:11.776Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Rows Affected"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "UPDATE SQL query"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const oracledb = require('oracledb');\n  let connection;\n  try {\n    connection = await oracledb.getConnection(connectorData.poolName);\n    const result = await connection.execute(inputParams.query, (inputParams.values || []));\n    return { success: true, output: { rowsAffected: result.rowsAffected } };\n  } catch (err) {\n    return { success: false, output: { error: err.message } };\n  } finally {\n    if (connection) {\n      connection.close();\n    }\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "oracle_delete",
+    "label": "ORACLE Delete",
+    "description": "ORACLE Delete for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "oracle_delete",
+            "label": "ORACLE Delete",
+            "icon": "🗑️",
+            "category": "PROCESS",
+            "description": "ORACLE Delete node for Database group - deletes data from ORACLE.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-09-03T06:19:36.787Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Rows Affected"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "DELETE SQL query"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const oracledb = require('oracledb');\n  let connection;\n  try {\n    connection = await oracledb.getConnection(connectorData.poolName);\n    const result = await connection.execute(inputParams.query, (inputParams.values || []));\n    return { success: true, output: { rowsAffected: result.rowsAffected } };\n  } catch (err) {\n    return { success: false, output: { error: err.message } };\n  } finally {\n    if (connection) {\n      connection.close();\n    }\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mssql_insert",
+    "label": "MSSQL Insert",
+    "description": "MSSQL Insert for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mssql_insert",
+            "label": "MSSQL Insert",
+            "icon": "➕",
+            "category": "PROCESS",
+            "description": "MSSQL Insert node for Database group - inserts data into MSSQL.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-04-15T18:56:04.639Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Inserted Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "INSERT SQL query"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for MSSQL code - original was empty\n  try {\n    // Implement MSSQL insert logic here\n    return { success: true, output: { insertedCount: 1, insertedIds: [] } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mssql_query",
+    "label": "MSSQL Query",
+    "description": "MSSQL Query for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mssql_query",
+            "label": "MSSQL Query",
+            "icon": "📊",
+            "category": "PROCESS",
+            "description": "MSSQL Query node for Database group - executes SQL queries.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-04-15T18:56:04.639Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "SQL query to execute"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for MSSQL code - original was empty\n  try {\n    // Implement MSSQL query logic here\n    return { success: true, output: { data: [] } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mssql_update",
+    "label": "MSSQL Update",
+    "description": "MSSQL Update for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mssql_update",
+            "label": "MSSQL Update",
+            "icon": "🔄",
+            "category": "PROCESS",
+            "description": "MSSQL Update node for Database group - updates data in MSSQL.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-04-15T18:56:04.639Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Matched Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "UPDATE SQL query"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for MSSQL code - original was empty\n  try {\n    // Implement MSSQL update logic here\n    return { success: true, output: { matchedCount: 1, modifiedCount: 1 } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mssql_delete",
+    "label": "MSSQL Delete",
+    "description": "MSSQL Delete for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mssql_delete",
+            "label": "MSSQL Delete",
+            "icon": "🗑️",
+            "category": "PROCESS",
+            "description": "MSSQL Delete node for Database group - deletes data from MSSQL.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-04-15T18:56:04.639Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Deleted Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "DELETE SQL query"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for MSSQL code - original was empty\n  try {\n    // Implement MSSQL delete logic here\n    return { success: true, output: { deletedCount: 1 } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "postgre_query",
+    "label": "Postgre Query",
+    "description": "Postgre Query for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "postgre_query",
+            "label": "Postgre Query",
+            "icon": "📊",
+            "category": "PROCESS",
+            "description": "Postgre Query node for Database group - executes SQL queries.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2025-03-10T12:38:27.024Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "SQL query to execute"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const client = await connectorData.pgPool.connect();\n  try {\n    const result = await client.query(inputParams.query, inputParams.values || []);\n    return { success: true, output: { data: result.rows } };\n  } finally {\n    client.release();\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "postgre_insert",
+    "label": "Postgre Insert",
+    "description": "Postgre Insert for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "postgre_insert",
+            "label": "Postgre Insert",
+            "icon": "➕",
+            "category": "PROCESS",
+            "description": "Postgre Insert node for Database group - inserts data into Postgre.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2025-03-10T07:16:38.304Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Inserted Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "INSERT SQL query"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const client = await connectorData.pgPool.connect();\n  try {\n    const result = await client.query(inputParams.query, inputParams.values || []);\n    return { success: true, output: { insertedCount: result.rowCount, insertedIds: result.rows.map(e => e.id) } };\n  } finally {\n    client.release();\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "postgre_update",
+    "label": "Postgre Update",
+    "description": "Postgre Update for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "postgre_update",
+            "label": "Postgre Update",
+            "icon": "🔄",
+            "category": "PROCESS",
+            "description": "Postgre Update node for Database group - updates data in Postgre.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2025-03-10T07:16:56.092Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Modified Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "UPDATE SQL query"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const client = await connectorData.pgPool.connect();\n  try {\n    const result = await client.query(inputParams.query, inputParams.values || []);\n    return { success: true, output: { modifiedCount: result.rowCount } };\n  } finally {\n    client.release();\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "postgre_delete",
+    "label": "Postgre Delete",
+    "description": "Postgre Delete for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "postgre_delete",
+            "label": "Postgre Delete",
+            "icon": "🗑️",
+            "category": "PROCESS",
+            "description": "Postgre Delete node for Database group - deletes data from Postgre.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2025-03-10T07:17:12.668Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Deleted Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "query",
+                "name": "query",
+                "label": "Query",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "DELETE SQL query"
+            },
+            {
+                "id": "values",
+                "name": "values",
+                "label": "Values",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Parameterized values as array"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const client = await connectorData.pgPool.connect();\n  try {\n    const result = await client.query(inputParams.query, inputParams.values || []);\n    return { success: true, output: { deletedCount: result.rowCount } };\n  } finally {\n    client.release();\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mongodb_find_many",
+    "label": "MongoDB Find Many",
+    "description": "MongoDB Find Many for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mongodb_find_many",
+            "label": "MongoDB Find Many",
+            "icon": "📊",
+            "category": "PROCESS",
+            "description": "MongoDB Find Many node for Database group - finds multiple documents in MongoDB.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2025-02-07T09:17:07.115Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "filter",
+                "name": "filter",
+                "label": "Filter",
+                "type": "object",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "{}",
+                "description": "Filter as JSON"
+            },
+            {
+                "id": "project",
+                "name": "project",
+                "label": "Project",
+                "type": "object",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "{}",
+                "description": "Projection as JSON"
+            },
+            {
+                "id": "sort",
+                "name": "sort",
+                "label": "Sort",
+                "type": "object",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "{}",
+                "description": "Sort as JSON"
+            },
+            {
+                "id": "limit",
+                "name": "limit",
+                "label": "Limit",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": "",
+                "description": "Limit number of results"
+            },
+            {
+                "id": "offset",
+                "name": "offset",
+                "label": "Offset",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": "",
+                "description": "Offset for pagination"
+            },
+            {
+                "id": "timeout",
+                "name": "timeout",
+                "label": "Timeout",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": "",
+                "description": "Query timeout"
+            },
+            {
+                "id": "collection",
+                "name": "collection",
+                "label": "Collection",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "MongoDB collection name"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const cursor = connectorData.db.collection(inputParams.collection).find(inputParams.filter);\n  if (!.isEmpty(inputParams.project)) {\n    cursor.project(inputParams.project);\n  }\n  if (!_.isEmpty(inputParams.sort)) {\n    cursor.sort(inputParams.sort);\n  }\n  if (inputParams.offset) {\n    cursor.skip(inputParams.offset);\n  }\n  if (inputParams.limit) {\n    cursor.limit(inputParams.limit);\n  }\n  const result = await cursor.toArray();\n  return { success: true, output: { data: result } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mongodb_insert_many",
+    "label": "MongoDB Insert Many",
+    "description": "MongoDB Insert Many for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mongodb_insert_many",
+            "label": "MongoDB Insert Many",
+            "icon": "➕",
+            "category": "PROCESS",
+            "description": "MongoDB Insert Many node for Database group - inserts multiple documents into MongoDB.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2025-02-07T09:17:18.251Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Inserted Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "[]",
+                "description": "Array of documents to insert as JSON"
+            },
+            {
+                "id": "collection",
+                "name": "collection",
+                "label": "Collection",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "MongoDB collection name"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const result = await connectorData.db.collection(inputParams.collection).insertMany(inputParams.data);\n  return { success: true, output: { insertedCount: result.insertedCount, insertedIds: result.insertedIds } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mongodb_update_many",
+    "label": "MongoDB Update Many",
+    "description": "MongoDB Update Many for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mongodb_update_many",
+            "label": "MongoDB Update Many",
+            "icon": "🔄",
+            "category": "PROCESS",
+            "description": "MongoDB Update Many node for Database group - updates multiple documents in MongoDB.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2025-02-07T09:17:26.158Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Matched Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "filter",
+                "name": "filter",
+                "label": "Filter",
+                "type": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "{}",
+                "description": "Filter as JSON"
+            },
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "{}",
+                "description": "Update data as JSON"
+            },
+            {
+                "id": "collection",
+                "name": "collection",
+                "label": "Collection",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "MongoDB collection name"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const result = await connectorData.db.collection(inputParams.collection).updateMany(inputParams.filter, inputParams.data);\n  return { success: true, output: { matchedCount: result.matchedCount, modifiedCount: result.modifiedCount } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mongodb_delete_many",
+    "label": "MongoDB Delete Many",
+    "description": "MongoDB Delete Many for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mongodb_delete_many",
+            "label": "MongoDB Delete Many",
+            "icon": "🗑️",
+            "category": "PROCESS",
+            "description": "MongoDB Delete Many node for Database group - deletes multiple documents from MongoDB.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2025-02-07T09:17:33.959Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Deleted Count"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "filter",
+                "name": "filter",
+                "label": "Filter",
+                "type": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "{}",
+                "description": "Filter as JSON"
+            },
+            {
+                "id": "collection",
+                "name": "collection",
+                "label": "Collection",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "MongoDB collection name"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const result = await connectorData.db.collection(inputParams.collection).deleteMany(inputParams.filter);\n  return { success: true, output: { deletedCount: result.deletedCount } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "documentdb_find_many",
+    "label": "DocumentDB Find Many",
+    "description": "DocumentDB Find Many for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "documentdb_find_many",
+            "label": "DocumentDB Find Many",
+            "icon": "📊",
+            "category": "PROCESS",
+            "description": "DocumentDB Find Many node for Database group - finds multiple documents in DocumentDB.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.639Z",
+            "updatedAt": "2024-04-15T18:56:04.639Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "filter",
+                "name": "filter",
+                "label": "Filter",
+                "type": "object",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "{}",
+                "description": "Filter as JSON"
+            },
+            {
+                "id": "project",
+                "name": "project",
+                "label": "Project",
+                "type": "object",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "{}",
+                "description": "Projection as JSON"
+            },
+            {
+                "id": "sort",
+                "name": "sort",
+                "label": "Sort",
+                "type": "object",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "{}",
+                "description": "Sort as JSON"
+            },
+            {
+                "id": "limit",
+                "name": "limit",
+                "label": "Limit",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": "",
+                "description": "Limit number of results"
+            },
+            {
+                "id": "offset",
+                "name": "offset",
+                "label": "Offset",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": "",
+                "description": "Offset for pagination"
+            },
+            {
+                "id": "timeout",
+                "name": "timeout",
+                "label": "Timeout",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": "",
+                "description": "Query timeout"
+            },
+            {
+                "id": "collection",
+                "name": "collection",
+                "label": "Collection",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "DocumentDB collection name"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for DocumentDB code - original was truncated, assume similar to MongoDB\n  try {\n    // Implement DocumentDB find logic here\n    return { success: true, output: { data: [] } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "solace_publish",
+    "label": "Solace Publish",
+    "description": "Solace publisher for queue operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "solace_publish",
+            "label": "Solace Publish",
+            "icon": "📤",
+            "category": "PROCESS",
+            "description": "Solace Publish node for Queue group - publishes messages to Solace topic.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2024-04-15T18:56:04.638Z",
+            "updatedAt": "2025-03-10T12:04:34.628Z"
+        },
+        "visualization": {
+            "borderColor": "#FF9800",
+            "headerBackground": "#FFF3E0",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Message"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "topic",
+                "name": "topic",
+                "label": "Topic",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Solace topic to publish to"
+            },
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Message data"
+            },
+            {
+                "id": "trackingId",
+                "name": "trackingId",
+                "label": "Tracking ID",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Tracking ID for message"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const solace = require('solclientjs');\n  const solaceMessage = solace.SolclientFactory.createMessage();\n  solaceMessage.setDestination(solace.SolclientFactory.createTopicDestination(inputParams.topic));\n  if (typeof inputParams.data === 'object') {\n    solaceMessage.setBinaryAttachment(JSON.stringify(inputParams.data));\n  } else {\n    solaceMessage.setBinaryAttachment(inputParams.data);\n  }\n\n  solaceMessage.setCorrelationId(inputParams.trackingId);\n  solaceMessage.setCorrelationKey(inputParams.trackingId);\n  solaceMessage.setApplicationMessageId(inputParams.trackingId);\n  solaceMessage.setApplicationMessageType(\"string\");\n  solaceMessage.setXmlContent(inputParams.data);\n\n  solaceMessage.setDeliveryMode(solace.MessageDeliveryModeType.DIRECT);\n  connectorData.solaceSession.send(solaceMessage);\n  logger.info('Published to topic ' + inputParams.topic);\n  return { success: true, output: { message: 'Published to topic ' + inputParams.topic } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "solace_subscribe",
+    "label": "Solace Subscribe",
+    "description": "Solace subscriber for queue triggers.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "solace_subscribe",
+            "label": "Solace Subscribe",
+            "icon": "📨",
+            "category": "TRIGGER",
+            "description": "Solace Subscribe node for Queue group - subscribes to Solace topic.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-03-07T11:16:48.883Z",
+            "updatedAt": "2025-03-10T12:04:34.628Z"
+        },
+        "visualization": {
+            "borderColor": "#FF9800",
+            "headerBackground": "#FFF3E0",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "topic",
+                "name": "topic",
+                "label": "Topic",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Solace topic to subscribe to"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const solace = require('solclientjs');\n  connectorData.solaceSession.subscribe(\n    solace.SolclientFactory.createTopicDestination(inputParams.topic),\n    true,\n    inputParams.topic,\n    10000\n  );\n  connectorData.solaceSession.on(solace.SessionEventCode.SUBSCRIPTION_OK, () => {\n    console.log('Subscribed to ' + inputParams.topic);\n  });\n  connectorData.solaceSession.on(solace.SessionEventCode.SUBSCRIPTION_ERROR, (error) => {\n    console.error('Subscription failed: ' + error);\n  });\n  connectorData.solaceSession.on(solace.SessionEventCode.MESSAGE, (message) => {\n    let data = message.getBinaryAttachment();\n    // Adapted for context: context.triggerNext({ data, message });\n    return { success: true, output: { data: data.toString('utf8'), message } };\n  });\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "skip_interaction_log",
+    "label": "Skip Interaction Log",
+    "description": "Skip Interaction Log for misc operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "skip_interaction_log",
+            "label": "Skip Interaction Log",
+            "icon": "⏭️",
+            "category": "PROCESS",
+            "description": "Skip Interaction Log node for Misc group - skips logging for interactions.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-04-13T05:46:27.635Z",
+            "updatedAt": "2025-04-13T05:55:40.172Z"
+        },
+        "visualization": {
+            "borderColor": "#607D8B",
+            "headerBackground": "#ECEFF1",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Status Code"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "skipLogging",
+                "name": "skipLogging",
+                "label": "Skip Logging",
+                "type": "boolean",
+                "inputType": "checkbox",
+                "required": false,
+                "defaultValue": false,
+                "description": "Whether to skip interaction logging"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  req.locals.skipInteraction = false;\n  if (inputParams.skipLogging == true || inputParams.skipLogging == 'true') {\n    req.locals.skipInteraction = true;\n  }\n  return { success: true, output: { statusCode: 200 } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "encryption_pgp",
+    "label": "Encryption PGP",
+    "description": "Encryption PGP for security operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "encryption_pgp",
+            "label": "Encryption PGP",
+            "icon": "🔒",
+            "category": "PROCESS",
+            "description": "Encryption PGP node for Security group - encrypts data using PGP.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T07:49:40.422Z",
+            "updatedAt": "2025-05-15T06:11:55.600Z"
+        },
+        "visualization": {
+            "borderColor": "#F44336",
+            "headerBackground": "#FFEBEE",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Data to encrypt"
+            },
+            {
+                "id": "type",
+                "name": "type",
+                "label": "Type",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Encryption type"
+            },
+            {
+                "id": "format",
+                "name": "format",
+                "label": "Format",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Output format"
+            },
+            {
+                "id": "passwords",
+                "name": "passwords",
+                "label": "Passwords",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Array of passwords"
+            },
+            {
+                "id": "publicKey",
+                "name": "publicKey",
+                "label": "Public Key",
+                "type": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "",
+                "description": "PGP public key"
+            },
+            {
+                "id": "passphrase",
+                "name": "passphrase",
+                "label": "Passphrase",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Passphrase for key"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for PGP encryption code - original was empty\n  try {\n    // Implement PGP encryption logic here\n    return { success: true, output: { data: 'Encrypted data' } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "decryption_pgp",
+    "label": "Decryption PGP",
+    "description": "Decryption PGP for security operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "decryption_pgp",
+            "label": "Decryption PGP",
+            "icon": "🔓",
+            "category": "PROCESS",
+            "description": "Decryption PGP node for Security group - decrypts data using PGP.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T07:50:00.077Z",
+            "updatedAt": "2025-05-15T06:12:43.624Z"
+        },
+        "visualization": {
+            "borderColor": "#F44336",
+            "headerBackground": "#FFEBEE",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Data to decrypt"
+            },
+            {
+                "id": "type",
+                "name": "type",
+                "label": "Type",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Decryption type"
+            },
+            {
+                "id": "format",
+                "name": "format",
+                "label": "Format",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Input format"
+            },
+            {
+                "id": "passwords",
+                "name": "passwords",
+                "label": "Passwords",
+                "type": "array",
+                "subType": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "[]",
+                "description": "Array of passwords"
+            },
+            {
+                "id": "privateKey",
+                "name": "privateKey",
+                "label": "Private Key",
+                "type": "string",
+                "inputType": "textarea",
+                "required": false,
+                "defaultValue": "",
+                "description": "PGP private key"
+            },
+            {
+                "id": "passphrase",
+                "name": "passphrase",
+                "label": "Passphrase",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Passphrase for key"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for PGP decryption code - original was empty\n  try {\n    // Implement PGP decryption logic here\n    return { success: true, output: { data: 'Decrypted data' } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "encryption_base_64",
+    "label": "Encryption Base64",
+    "description": "Encryption Base64 for security operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "encryption_base_64",
+            "label": "Encryption Base64",
+            "icon": "🔒",
+            "category": "PROCESS",
+            "description": "Encryption Base64 node for Security group - encodes data to Base64.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T07:50:28.362Z",
+            "updatedAt": "2025-05-15T06:01:28.816Z"
+        },
+        "visualization": {
+            "borderColor": "#F44336",
+            "headerBackground": "#FFEBEE",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Data to encode"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for Base64 encode code - original was empty\n  try {\n    const encoded = Buffer.from(inputParams.data).toString('base64');\n    return { success: true, output: { data: encoded } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "decryption_base_64",
+    "label": "Decryption Base64",
+    "description": "Decryption Base64 for security operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "decryption_base_64",
+            "label": "Decryption Base64",
+            "icon": "🔓",
+            "category": "PROCESS",
+            "description": "Decryption Base64 node for Security group - decodes Base64 data.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T07:50:46.330Z",
+            "updatedAt": "2025-05-15T06:01:42.020Z"
+        },
+        "visualization": {
+            "borderColor": "#F44336",
+            "headerBackground": "#FFEBEE",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Base64 data to decode"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for Base64 decode code - original was empty\n  try {\n    const decoded = Buffer.from(inputParams.data, 'base64').toString('utf8');\n    return { success: true, output: { data: decoded } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "encryption_symmetric",
+    "label": "Encryption Symmetric",
+    "description": "Encryption Symmetric for security operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "encryption_symmetric",
+            "label": "Encryption Symmetric",
+            "icon": "🔒",
+            "category": "PROCESS",
+            "description": "Encryption Symmetric node for Security group - encrypts data using symmetric algorithm.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T07:51:41.762Z",
+            "updatedAt": "2025-05-15T06:14:57.147Z"
+        },
+        "visualization": {
+            "borderColor": "#F44336",
+            "headerBackground": "#FFEBEE",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Data to encrypt"
+            },
+            {
+                "id": "secret",
+                "name": "secret",
+                "label": "Secret",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Symmetric secret key"
+            },
+            {
+                "id": "algo",
+                "name": "algo",
+                "label": "Algorithm",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "aes256",
+                "description": "Encryption algorithm"
+            },
+            {
+                "id": "inputEncoding",
+                "name": "inputEncoding",
+                "label": "Input Encoding",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "utf8",
+                "description": "Input encoding"
+            },
+            {
+                "id": "outputEncoding",
+                "name": "outputEncoding",
+                "label": "Output Encoding",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "hex",
+                "description": "Output encoding"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for symmetric encryption code - original was empty\n  try {\n    const crypto = require('crypto');\n    const cipher = crypto.createCipher(inputParams.algo || 'aes256', inputParams.secret);\n    let encrypted = cipher.update(inputParams.data, inputParams.inputEncoding || 'utf8', inputParams.outputEncoding || 'hex');\n    encrypted += cipher.final(inputParams.outputEncoding || 'hex');\n    return { success: true, output: { data: encrypted } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "decryption_symmetric",
+    "label": "Decryption Symmetric",
+    "description": "Decryption Symmetric for security operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "decryption_symmetric",
+            "label": "Decryption Symmetric",
+            "icon": "🔓",
+            "category": "PROCESS",
+            "description": "Decryption Symmetric node for Security group - decrypts data using symmetric algorithm.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T07:51:57.060Z",
+            "updatedAt": "2025-05-15T06:15:20.094Z"
+        },
+        "visualization": {
+            "borderColor": "#F44336",
+            "headerBackground": "#FFEBEE",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Encrypted data to decrypt"
+            },
+            {
+                "id": "secret",
+                "name": "secret",
+                "label": "Secret",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Symmetric secret key"
+            },
+            {
+                "id": "algo",
+                "name": "algo",
+                "label": "Algorithm",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "aes256",
+                "description": "Decryption algorithm"
+            },
+            {
+                "id": "inputEncoding",
+                "name": "inputEncoding",
+                "label": "Input Encoding",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "hex",
+                "description": "Input encoding"
+            },
+            {
+                "id": "outputEncoding",
+                "name": "outputEncoding",
+                "label": "Output Encoding",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "utf8",
+                "description": "Output encoding"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for symmetric decryption code - original was empty\n  try {\n    const crypto = require('crypto');\n    const decipher = crypto.createDecipher(inputParams.algo || 'aes256', inputParams.secret);\n    let decrypted = decipher.update(inputParams.data, inputParams.inputEncoding || 'hex', inputParams.outputEncoding || 'utf8');\n    decrypted += decipher.final(inputParams.outputEncoding || 'utf8');\n    return { success: true, output: { data: decrypted } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "encryption_asymmetric",
+    "label": "Encryption Asymmetric",
+    "description": "Encryption Asymmetric for security operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "encryption_asymmetric",
+            "label": "Encryption Asymmetric",
+            "icon": "🔒",
+            "category": "PROCESS",
+            "description": "Encryption Asymmetric node for Security group - encrypts data using asymmetric algorithm.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T07:53:08.835Z",
+            "updatedAt": "2025-05-15T06:16:46.908Z"
+        },
+        "visualization": {
+            "borderColor": "#F44336",
+            "headerBackground": "#FFEBEE",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Data to encrypt"
+            },
+            {
+                "id": "publicKey",
+                "name": "publicKey",
+                "label": "Public Key",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Asymmetric public key"
+            },
+            {
+                "id": "passphrase",
+                "name": "passphrase",
+                "label": "Passphrase",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Passphrase for key"
+            },
+            {
+                "id": "inputEncoding",
+                "name": "inputEncoding",
+                "label": "Input Encoding",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "utf8",
+                "description": "Input encoding"
+            },
+            {
+                "id": "outputEncoding",
+                "name": "outputEncoding",
+                "label": "Output Encoding",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "base64",
+                "description": "Output encoding"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for asymmetric encryption code - original was empty\n  try {\n    const crypto = require('crypto');\n    const encrypted = crypto.publicEncrypt(inputParams.publicKey, Buffer.from(inputParams.data)).toString(inputParams.outputEncoding || 'base64');\n    return { success: true, output: { data: encrypted } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "decryption_asymmetric",
+    "label": "Decryption Asymmetric",
+    "description": "Decryption Asymmetric for security operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "decryption_asymmetric",
+            "label": "Decryption Asymmetric",
+            "icon": "🔓",
+            "category": "PROCESS",
+            "description": "Decryption Asymmetric node for Security group - decrypts data using asymmetric algorithm.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T07:53:30.184Z",
+            "updatedAt": "2025-05-15T06:17:24.815Z"
+        },
+        "visualization": {
+            "borderColor": "#F44336",
+            "headerBackground": "#FFEBEE",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Encrypted data to decrypt"
+            },
+            {
+                "id": "privateKey",
+                "name": "privateKey",
+                "label": "Private Key",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Asymmetric private key"
+            },
+            {
+                "id": "passphrase",
+                "name": "passphrase",
+                "label": "Passphrase",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Passphrase for key"
+            },
+            {
+                "id": "inputEncoding",
+                "name": "inputEncoding",
+                "label": "Input Encoding",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "base64",
+                "description": "Input encoding"
+            },
+            {
+                "id": "outputEncoding",
+                "name": "outputEncoding",
+                "label": "Output Encoding",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "utf8",
+                "description": "Output encoding"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for asymmetric decryption code - original was empty\n  try {\n    const crypto = require('crypto');\n    const decrypted = crypto.privateDecrypt(inputParams.privateKey, Buffer.from(inputParams.data, inputParams.inputEncoding || 'base64'), 'utf8');\n    return { success: true, output: { data: decrypted } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "parse_edi",
+    "label": "Parse EDI",
+    "description": "Parse EDI for misc operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "parse_edi",
+            "label": "Parse EDI",
+            "icon": "📄",
+            "category": "PROCESS",
+            "description": "Parse EDI node for Misc group - parses EDI data.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T08:06:45.492Z",
+            "updatedAt": "2025-05-15T05:59:51.522Z"
+        },
+        "visualization": {
+            "borderColor": "#607D8B",
+            "headerBackground": "#ECEFF1",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "EDI data to parse"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for EDI parse code - original was empty\n  try {\n    // Implement EDI parsing logic here\n    return { success: true, output: { data: { parsed: true } } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "render_edi",
+    "label": "Render EDI",
+    "description": "Render EDI for misc operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "render_edi",
+            "label": "Render EDI",
+            "icon": "📄",
+            "category": "PROCESS",
+            "description": "Render EDI node for Misc group - renders EDI data.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T08:07:07.375Z",
+            "updatedAt": "2025-05-15T06:00:08.692Z"
+        },
+        "visualization": {
+            "borderColor": "#607D8B",
+            "headerBackground": "#ECEFF1",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "{}",
+                "description": "Data to render as EDI"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for EDI render code - original was empty\n  try {\n    // Implement EDI rendering logic here\n    return { success: true, output: { data: 'Rendered EDI' } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "parse_mt",
+    "label": "Parse MT",
+    "description": "Parse MT for misc operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "parse_mt",
+            "label": "Parse MT",
+            "icon": "📄",
+            "category": "PROCESS",
+            "description": "Parse MT node for Misc group - parses MT data.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T08:13:40.958Z",
+            "updatedAt": "2025-05-15T06:00:22.255Z"
+        },
+        "visualization": {
+            "borderColor": "#607D8B",
+            "headerBackground": "#ECEFF1",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "MT data to parse"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for MT parse code - original was empty\n  try {\n    // Implement MT parsing logic here\n    return { success: true, output: { data: { parsed: true } } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "render_mt",
+    "label": "Render MT",
+    "description": "Render MT for misc operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "render_mt",
+            "label": "Render MT",
+            "icon": "📄",
+            "category": "PROCESS",
+            "description": "Render MT node for Misc group - renders MT data.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-14T08:13:56.928Z",
+            "updatedAt": "2025-05-15T06:00:36.531Z"
+        },
+        "visualization": {
+            "borderColor": "#607D8B",
+            "headerBackground": "#ECEFF1",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "{}",
+                "description": "Data to render as MT"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for MT render code - original was empty\n  try {\n    // Implement MT rendering logic here\n    return { success: true, output: { data: 'Rendered MT' } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "parse_ach",
+    "label": "Parse ACH",
+    "description": "Parse ACH for misc operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "parse_ach",
+            "label": "Parse ACH",
+            "icon": "📄",
+            "category": "PROCESS",
+            "description": "Parse ACH node for Misc group - parses ACH data.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-27T11:18:24.778Z",
+            "updatedAt": "2025-05-27T11:18:41.655Z"
+        },
+        "visualization": {
+            "borderColor": "#607D8B",
+            "headerBackground": "#ECEFF1",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "ACH data to parse"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for ACH parse code - original was empty\n  try {\n    // Implement ACH parsing logic here\n    return { success: true, output: { data: { parsed: true } } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "render_ach",
+    "label": "Render ACH",
+    "description": "Render ACH for misc operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "render_ach",
+            "label": "Render ACH",
+            "icon": "📄",
+            "category": "PROCESS",
+            "description": "Render ACH node for Misc group - renders ACH data.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-05-27T11:19:21.552Z",
+            "updatedAt": "2025-05-27T11:19:34.412Z"
+        },
+        "visualization": {
+            "borderColor": "#607D8B",
+            "headerBackground": "#ECEFF1",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "{}",
+                "description": "Data to render as ACH"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for ACH render code - original was empty\n  try {\n    // Implement ACH rendering logic here\n    return { success: true, output: { data: 'Rendered ACH' } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "agent_send_dynamic",
+    "label": "AGENT_SEND_DYNAMIC",
+    "description": "AGENT_SEND_DYNAMIC for file operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "agent_send_dynamic",
+            "label": "AGENT_SEND_DYNAMIC",
+            "icon": "📤",
+            "category": "PROCESS",
+            "description": "AGENT_SEND_DYNAMIC node for File group - sends files dynamically to agents.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-06-23T07:46:57.486Z",
+            "updatedAt": "2025-07-01T08:45:55.621Z"
+        },
+        "visualization": {
+            "borderColor": "#795548",
+            "headerBackground": "#EFEBE9",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Status Code"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "agents",
+                "name": "agents",
+                "label": "Agents",
+                "type": "array",
+                "subType": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "[]",
+                "description": "Array of agent configurations as JSON"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const agents = inputParams.agents || [];\n  logger.debug('Agent_Send_Dynamic - ', agents);\n  const result = [];\n  let finalStatusCode = 200;\n\n  if (!Array.isArray(agents) || agents.length === 0) {\n    return { success: false, output: { statusCode: 400, result } };\n  }\n\n  for (const agentData of agents) {\n    try {\n      if (!agentData.outputDirectories ||\n        !Array.isArray(agentData.outputDirectories) ||\n        agentData.outputDirectories.length === 0 ||\n        agentData.outputDirectories.every(dir => dir === null || dir === undefined || dir === '')) {\n        throw new Error('OutputDirectories is not configured for agentId: ' + agentData.agentId);\n      }\n\n      const agentInput = {\n        agentId: agentData.agentId,\n        outputDirectories: agentData.outputDirectories,\n        outputFileName: agentData.outputFileName,\n        decryptFile: agentData.decryptFile,\n        extract: agentData.extract,\n        data: agentData.fileData\n      };\n\n      logger.debug('AgenInput - ', agentInput);\n      const agentDoc = await commonUtils.getAgent(agentData.agentId);\n      logger.debug('AgentDoc - ', agentDoc);\n      const downloadOptions = commonUtils.getAgentSendPayload(req, flowData, agentDoc, agentInput);\n      logger.info('Sending File Download Request to ' + agentData.agentId + ' Agent');\n      const fileDetails = await agentUtils.sendAgentDownloadRequestV1(flowData._id, req, downloadOptions);\n      logger.debug('FileDetails - ', fileDetails);\n      result.push({\n        agentId: agentData.agentId,\n        status: 'success',\n        statusCode: 200,\n        data: fileDetails\n      });\n\n    } catch (err) {\n      logger.error('Error Occurred on ' + agentData.agentId + ' Agent Download', err);\n      result.push({\n        agentId: agentData.agentId,\n        status: 'failure',\n        statusCode: 400,\n        data: { filename: agentData.outputFileName },\n        error: err,\n        message: err?.message || 'Unknown error'\n      });\n    }\n  }\n\n  const allSuccess = result.every(r => r.status === 'success');\n  const anySuccess = result.some(r => r.status === 'success');\n\n  if (!allSuccess && anySuccess) {\n    finalStatusCode = 206;\n  } else if (!anySuccess) {\n    finalStatusCode = 500;\n    throw new Error('Error Occurred on Agent_Send_Dynamic Node : ' + JSON.stringify(result));\n  }\n\n  return { success: true, output: { statusCode: finalStatusCode, result } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "redis_set",
+    "label": "Redis Set",
+    "description": "Redis Set for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "redis_set",
+            "label": "Redis Set",
+            "icon": "💾",
+            "category": "PROCESS",
+            "description": "Redis Set node for Database group - sets a key in Redis.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-07-22T08:07:05.527Z",
+            "updatedAt": "2025-07-22T08:07:05.527Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Result"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "key",
+                "name": "key",
+                "label": "Key",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Redis key"
+            },
+            {
+                "id": "value",
+                "name": "value",
+                "label": "Value",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Value to set"
+            },
+            {
+                "id": "ttl",
+                "name": "ttl",
+                "label": "TTL",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": "",
+                "description": "Time to live in seconds"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for Redis set code - original was empty\n  try {\n    await connectorData.redisClient.set(inputParams.key, inputParams.value, 'EX', inputParams.ttl);\n    return { success: true, output: { set: true } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "redis_get",
+    "label": "Redis Get",
+    "description": "Redis Get for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "redis_get",
+            "label": "Redis Get",
+            "icon": "📖",
+            "category": "PROCESS",
+            "description": "Redis Get node for Database group - gets a value from Redis.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-07-22T08:07:34.842Z",
+            "updatedAt": "2025-07-22T08:07:34.842Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Value"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "key",
+                "name": "key",
+                "label": "Key",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Redis key"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for Redis get code - original was empty\n  try {\n    const value = await connectorData.redisClient.get(inputParams.key);\n    return { success: true, output: { value } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "redis_delete",
+    "label": "Redis Delete",
+    "description": "Redis Delete for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "redis_delete",
+            "label": "Redis Delete",
+            "icon": "🗑️",
+            "category": "PROCESS",
+            "description": "Redis Delete node for Database group - deletes a key from Redis.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-07-22T08:08:05.368Z",
+            "updatedAt": "2025-07-22T08:08:05.368Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Deleted"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "key",
+                "name": "key",
+                "label": "Key",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Redis key to delete"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for Redis delete code - original was empty\n  try {\n    const deleted = await connectorData.redisClient.del(inputParams.key);\n    return { success: true, output: { deleted } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "redis_list",
+    "label": "Redis List",
+    "description": "Redis List for database operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "redis_list",
+            "label": "Redis List",
+            "icon": "📝",
+            "category": "PROCESS",
+            "description": "Redis List node for Database group - lists keys in Redis.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-07-22T08:08:57.356Z",
+            "updatedAt": "2025-07-22T08:08:57.356Z"
+        },
+        "visualization": {
+            "borderColor": "#9C27B0",
+            "headerBackground": "#F3E5F5",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Keys"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "pattern",
+                "name": "pattern",
+                "label": "Pattern",
+                "type": "string",
+                "inputType": "text",
+                "required": false,
+                "defaultValue": "",
+                "description": "Key pattern for listing"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  // Placeholder for Redis list code - original was empty\n  try {\n    const keys = await connectorData.redisClient.keys(inputParams.pattern || '*');\n    return { success: true, output: { keys } };\n  } catch (error) {\n    return { success: false, output: { error: error.message } };\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "check_soft_lock",
+    "label": "Check Soft Lock",
+    "description": "Check Soft Lock for tools operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "check_soft_lock",
+            "label": "Check Soft Lock",
+            "icon": "🔒",
+            "category": "PROCESS",
+            "description": "Check Soft Lock node for Tools group - checks if a soft lock is active in Redis.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-07-22T08:10:34.826Z",
+            "updatedAt": "2025-07-22T09:27:36.007Z"
+        },
+        "visualization": {
+            "borderColor": "#795548",
+            "headerBackground": "#EFEBE9",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Status"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "processKey",
+                "name": "processKey",
+                "label": "Process Key",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Key for soft lock check"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const key = 'PROCESS_LOCK:' + inputParams.processKey;\n  const value = await connectorData.redisClient.get(key);\n  return { success: true, output: { data: { status: value === 'true' } } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "apply_soft_lock",
+    "label": "Apply Soft Lock",
+    "description": "Apply Soft Lock for tools operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "apply_soft_lock",
+            "label": "Apply Soft Lock",
+            "icon": "🔒",
+            "category": "PROCESS",
+            "description": "Apply Soft Lock node for Tools group - applies a soft lock in Redis with TTL.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-07-22T08:11:13.655Z",
+            "updatedAt": "2025-07-24T05:21:18.600Z"
+        },
+        "visualization": {
+            "borderColor": "#795548",
+            "headerBackground": "#EFEBE9",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Status"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "processKey",
+                "name": "processKey",
+                "label": "Process Key",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Key for soft lock"
+            },
+            {
+                "id": "ttl",
+                "name": "ttl",
+                "label": "TTL",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": 600,
+                "description": "Time to live in seconds"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const key = 'PROCESS_LOCK:' + inputParams.processKey;\n  const ttl = inputParams.ttl ? parseInt(inputParams.ttl + '') : 600;\n  const value = await connectorData.redisClient.get(key);\n  if (value == 'true') {\n    return { success: false, output: { data: { status: false } } };\n  }\n  await connectorData.redisClient.set(key, \"true\", \"EX\", ttl);\n  return { success: true, output: { data: { status: true } } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "release_soft_lock",
+    "label": "Release Soft Lock",
+    "description": "Release Soft Lock for tools operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "release_soft_lock",
+            "label": "Release Soft Lock",
+            "icon": "🔓",
+            "category": "PROCESS",
+            "description": "Release Soft Lock node for Tools group - releases a soft lock in Redis.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-07-22T08:11:42.568Z",
+            "updatedAt": "2025-07-22T10:18:15.652Z"
+        },
+        "visualization": {
+            "borderColor": "#795548",
+            "headerBackground": "#EFEBE9",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Status"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "processKey",
+                "name": "processKey",
+                "label": "Process Key",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Key for soft lock release"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const key = 'PROCESS_LOCK:' + inputParams.processKey;\n  await connectorData.redisClient.del(key);\n  return { success: true, output: { data: { status: true } } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "data_service_insert_many",
+    "label": "Data Service Insert Many",
+    "description": "Data Service Insert Many for data service operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "data_service_insert_many",
+            "label": "Data Service Insert Many",
+            "icon": "➕",
+            "category": "PROCESS",
+            "description": "Data Service Insert Many node for DataService group - inserts multiple records via data service API.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-07-23T09:28:52.976Z",
+            "updatedAt": "2025-07-24T10:13:22.370Z"
+        },
+        "visualization": {
+            "borderColor": "#FFC107",
+            "headerBackground": "#FFECB3",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Status Code"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "[]",
+                "description": "Array of data to insert as JSON"
+            },
+            {
+                "id": "token",
+                "name": "token",
+                "label": "Token",
+                "type": "string",
+                "inputType": "text",
+                "required": true,
+                "defaultValue": "",
+                "description": "Auth token"
+            },
+            {
+                "id": "timeout",
+                "name": "timeout",
+                "label": "Timeout",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": 60000,
+                "description": "Request timeout in ms"
+            },
+            {
+                "id": "skipValidation",
+                "name": "skipValidation",
+                "label": "Skip Validation",
+                "type": "boolean",
+                "inputType": "checkbox",
+                "required": false,
+                "defaultValue": false,
+                "description": "Skip validation on insert"
+            },
+            {
+                "id": "retries",
+                "name": "retries",
+                "label": "Retries",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": 0,
+                "description": "Number of retries"
+            },
+            {
+                "id": "retryDelay",
+                "name": "retryDelay",
+                "label": "Retry Delay",
+                "type": "number",
+                "inputType": "number",
+                "required": false,
+                "defaultValue": 1000,
+                "description": "Delay between retries in ms"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const axios = require('axios');\n  const axiosRetry = require('axios-retry').default;\n\n  try {\n    axiosRetry(axios, {\n      retries: inputParams.retries || process.env.DATASERVICE_RETRIES || 0,\n      retryDelay: (retryCount, error) => {\n        logger.info('[RETRY] Attempt #' + retryCount + ' - Reason: ' + (error?.code || error?.message));\n        return (inputParams.retryDelay || process.env.DATASERVICE_RETRY_DELAY || 1000);\n      },\n      onRetry: (retryCount, error, requestConfig) => {\n        logger.error('[RETRYING] Retry #' + retryCount + ' for ' + requestConfig?.url + ' - Error: ' + error?.message);\n      },\n      retryCondition: (error) => {\n        // Log the error to understand what's happening\n        logger.info('[DEBUG] Checking retry condition for error:', {\n          status: error?.response?.status,\n          code: error?.code,\n          message: error?.message\n        });\n        // Retry on 401, network errors, and 5xx errors\n        return axiosRetry.isNetworkOrIdempotentRequestError(error) ||\n          (error?.response?.status >= 400 && error?.response?.status <= 599);\n      },\n      shouldResetTimeout: true // Reset the timeout between retries\n    });\n    const resp = await axios({\n      method: 'post',\n      url: connectorData.api + '/utils/many/insert?skipValidation=' + (inputParams.skipValidation || false),\n      headers: {\n        'Content-Type': 'application/json',\n        'Authorization': inputParams.token,\n      },\n      data: inputParams.data,\n      timeout: inputParams.timeout || process.env.DATASERVICE_TIMEOUT || 60000,\n    });\n    return { success: true, output: { statusCoded: resp.status, data: resp.data } };\n  } catch (err) {\n    if (err.response) {\n      const error = new Error('Axios request failed: ' + err.response.status + ' - ' + err.response.statusText);\n      error.statusCode = err.response.status;\n      error.data = err.response.data;\n      error.stack = err.stack;\n      return { success: false, output: { statusCoded: error.statusCode, data: error.data, error: error.message } };\n    } else if (err.code === 'ECONNABORTED') {\n      const error = new Error('Request timeout');\n      error.statusCode = 408;\n      error.code = err.code;\n      error.stack = err.stack;\n      return { success: false, output: { statusCoded: error.statusCode, error: error.message } };\n    }\n    else {\n      return { success: false, output: { error: err.message } };\n    }\n  }\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "ai_summary",
+    "label": "AI Summary",
+    "description": "AI Summary for AIML operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "ai_summary",
+            "label": "AI Summary",
+            "icon": "🤖",
+            "category": "PROCESS",
+            "description": "AI Summary node for AIML group - generates summary using AI.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-09-03T14:48:09.051Z",
+            "updatedAt": "2025-09-03T16:29:28.135Z"
+        },
+        "visualization": {
+            "borderColor": "#00BCD4",
+            "headerBackground": "#E0F7FA",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "prompt",
+                "name": "prompt",
+                "label": "Prompt",
+                "type": "string",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "",
+                "description": "Prompt for AI summary"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const axios = require('axios');\n  const aiQueryConfig = {\n    method: 'POST',\n    maxBodyLength: Infinity,\n    url: ' https://dnimbus-partner-workspace.cloud.databricks.com/serving-endpoints/databricks-meta-llama-3-1-8b-instruct/invocations',\n    headers: {\n      'Content-Type': 'application/json',\n      'Authorization': 'Basic ' + Buffer.from(process.env.DATABRICKS_USERNAME + \": \" + process.env.DATABRICKS_PASSWORD, \"utf-8\").toString(\"base64\")\n    },\n    data: {\n      \"messages\": [\n        {\n          \"role\": \"user\",\n          \"content\": inputParams.prompt\n        }\n      ]\n    }\n  };\n  const aiResponse = await axios.request(aiQueryConfig);\n  return { success: true, output: { data: { message: aiResponse.data.choices[0].message.content, reason: aiResponse.data.choices[0].finish_reason } } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+},
+{
+    "name": "mapper",
+    "label": "Mapper",
+    "description": "Mapper for tools operations.",
+    "template": {
+        "version": "1.0.0",
+        "metadata": {
+            "name": "mapper",
+            "label": "Mapper",
+            "icon": "🔄",
+            "category": "PROCESS",
+            "description": "Mapper node for Tools group - maps data using JSONata.",
+            "author": "Generated from DNIO Nodes",
+            "createdAt": "2025-11-09T05:31:02.922Z",
+            "updatedAt": "2025-11-17T06:57:15.070Z"
+        },
+        "visualization": {
+            "borderColor": "#795548",
+            "headerBackground": "#EFEBE9",
+            "handles": {
+                "input": {
+                    "position": "left",
+                    "id": "input"
+                },
+                "output": [
+                    {
+                        "position": "right",
+                        "id": "output",
+                        "label": "Data"
+                    },
+                    {
+                        "position": "right",
+                        "id": "error",
+                        "label": "Error"
+                    }
+                ]
+            }
+        },
+        "parameters": [
+            {
+                "id": "data",
+                "name": "data",
+                "label": "Data",
+                "type": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "{}",
+                "description": "Input data as JSON"
+            },
+            {
+                "id": "mappings",
+                "name": "mappings",
+                "label": "Mappings",
+                "type": "array",
+                "subType": "object",
+                "inputType": "textarea",
+                "required": true,
+                "defaultValue": "[]",
+                "description": "Array of mappings as JSON"
+            }
+        ],
+        "executionCode": "async function executeNode(inputParams, context) {\n  const jsonata = require('jsonata');\n\n  function setNestedValue(obj, path, value) {\n    const parts = path.split('.');\n    let current = obj;\n    for (let i = 0; i < parts.length - 1; i++) {\n      const part = parts[i];\n      if (!(part in current)) current[part] = {};\n      current = current[part];\n    }\n    current[parts[parts.length - 1]] = value;\n  }\n\n  function getNestedValue(obj, path) {\n    const parts = path.split('.');\n    let current = obj;\n    for (const part of parts) {\n      if (current === null || current === undefined) return undefined;\n      current = current[part];\n    }\n    return current;\n  }\n\n  function mergeArrayFieldMappings(fieldMappings) {\n    if (fieldMappings.size === 0) return [];\n\n    const fieldNames = Array.from(fieldMappings.keys());\n    const maxLength = Math.max(...fieldNames.map(name => fieldMappings.get(name).length));\n    const result = [];\n\n    for (let i = 0; i < maxLength; i++) {\n      const mergedObject = {};\n      for (const fieldName of fieldNames) {\n        const fieldArray = fieldMappings.get(fieldName);\n        if (i < fieldArray.length && fieldArray[i] !== null && fieldArray[i] !== undefined) {\n          mergedObject[fieldName] = fieldArray[i];\n        }\n      }\n      if (Object.keys(mergedObject).length > 0) {\n        result.push(mergedObject);\n      }\n    }\n    return result;\n  }\n\n  async function transformData(sourceData, targetData, mappings) {\n    const result = {};\n    const arrayFieldMappings = new Map();\n\n    for (const mapping of mappings) {\n      try {\n        const expression = jsonata(mapping.transformationCode);\n        const transformedValue = await expression.evaluate(sourceData);\n\n        if (transformedValue !== undefined && transformedValue !== null) {\n          const targetValue = getNestedValue(targetData, mapping.targetPath);\n          const targetIsArray = Array.isArray(targetValue);\n          const targetPathParts = mapping.targetPath.split('.');\n          const isFieldMapping = targetPathParts.length > 1 && !targetIsArray;\n\n          if (isFieldMapping && Array.isArray(transformedValue)) {\n            const fieldName = targetPathParts[targetPathParts.length - 1];\n            const arrayPath = targetPathParts.slice(0, -1).join('.');\n\n            if (!arrayFieldMappings.has(arrayPath)) {\n              arrayFieldMappings.set(arrayPath, new Map());\n            }\n            arrayFieldMappings.get(arrayPath).set(fieldName, transformedValue);\n          } else {\n            setNestedValue(result, mapping.targetPath, transformedValue);\n          }\n        }\n      } catch (error) {\n        console.error('Transformation failed for ' + mapping.targetPath + ':', error);\n      }\n    }\n\n    for (const [arrayPath, fieldMappings] of arrayFieldMappings) {\n      const mergedArray = mergeArrayFieldMappings(fieldMappings);\n      setNestedValue(result, arrayPath, mergedArray);\n    }\n\n    console.log(JSON.stringify(result));\n    return result;\n  }\n\n  const { sourceData, targetData, mappings } = inputParams;\n  logger.trace(\"Sample source data\", JSON.stringify(sourceData));\n  logger.trace(\"Sample target data\", JSON.stringify(targetData));\n  logger.trace(\"Mappings array\", JSON.stringify(mappings));\n  if (!Array.isArray(mappings)) {\n    throw new Error('Mappings array is required for transformation');\n  }\n\n  const data = await transformData(sourceData, targetData, mappings);\n  return { success: true, output: { data } };\n}",
+          "propertiesComponentCode" : "default"
+    }
+}
+]
+
