@@ -8,18 +8,13 @@ import {
   Background,
   Controls,
   useReactFlow,
+  useUpdateNodeInternals,
 } from '@xyflow/react';
 import type { Node, Edge, Connection, NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faLayerGroup, faTimes } from '@fortawesome/free-solid-svg-icons';
-import TriggerNode from './components/nodes/TriggerNode';
-import FilterNode from './components/nodes/FilterNode';
-import BranchNode from './components/nodes/BranchNode';
-import LoopNode from './components/nodes/LoopNode';
-import IfNode from './components/nodes/IfNode';
 import CodeblockNode from './components/nodes/CodeblockNode';
-import HttpRequestNode from './components/nodes/HttpRequestNode';
 import PlaceholderNode from './components/nodes/PlaceholderNode';
 import DynamicNode from './components/nodes/DynamicNode';
 import NodePropertiesPanel from './components/NodePropertiesPanel';
@@ -31,13 +26,7 @@ import './App.css';
 
 // Base node types
 const baseNodeTypes: NodeTypes = {
-  trigger: TriggerNode,
-  filter: FilterNode,
-  branch: BranchNode,
-  loop: LoopNode,
-  if: IfNode,
   codeblock: CodeblockNode,
-  httpRequest: HttpRequestNode,
   placeholder: PlaceholderNode,
 };
 
@@ -81,6 +70,7 @@ function FlowContent() {
   const [templates, setTemplates] = useState<Record<string, NodeTemplate>>({});
   const [nodeTypes, setNodeTypes] = useState<NodeTypes>(baseNodeTypes);
   const { fitView } = useReactFlow();
+  const updateNodeInternals = useUpdateNodeInternals();
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -95,30 +85,39 @@ function FlowContent() {
       let edgeLabel = '';
       const sourceHandle = params.sourceHandle || 'output';
       const sourceNodeTemplate = (sourceNode.data as any)?.template;
+      const hasErrorHandle = (sourceNode.data as any)?.options?.errorHandling === 'continue';
       
-      // Determine if node has multiple outputs
-      let hasMultipleOutputs = false;
-      if (sourceNode.type === 'if' || sourceNode.type === 'branch' || sourceNode.type === 'loop') {
-        hasMultipleOutputs = true;
-      } else if (sourceNodeTemplate?.visualization?.handles?.output?.length > 1) {
-        hasMultipleOutputs = true;
-      }
+      // Check if this is the error handle
+      if (sourceHandle === 'error') {
+        edgeLabel = 'Error';
+      } else {
+        // Determine if node has multiple outputs
+        let hasMultipleOutputs = false;
+        if (sourceNode.type === 'if' || sourceNode.type === 'branch' || sourceNode.type === 'loop') {
+          hasMultipleOutputs = true;
+        } else if (sourceNodeTemplate?.visualization?.handles?.output?.length > 1) {
+          hasMultipleOutputs = true;
+        } else if (hasErrorHandle) {
+          // If error handle is present, there are multiple outputs
+          hasMultipleOutputs = true;
+        }
 
-      if (hasMultipleOutputs || sourceHandle !== 'output') {
-        // Get label from template or use handle name
-        if (sourceNodeTemplate?.visualization?.handles?.output) {
-          const handleDef = sourceNodeTemplate.visualization.handles.output.find(
-            (h: any) => h.id === sourceHandle
-          );
-          edgeLabel = handleDef?.label || sourceHandle;
-        } else {
-          // For built-in nodes
-          if (sourceNode.type === 'if') {
-            edgeLabel = sourceHandle === 'true' ? 'True' : 'False';
-          } else if (sourceNode.type === 'loop') {
-            edgeLabel = sourceHandle === 'output' ? 'Output' : 'Loop';
+        if (hasMultipleOutputs || sourceHandle !== 'output') {
+          // Get label from template or use handle name
+          if (sourceNodeTemplate?.visualization?.handles?.output) {
+            const handleDef = sourceNodeTemplate.visualization.handles.output.find(
+              (h: any) => h.id === sourceHandle
+            );
+            edgeLabel = handleDef?.label || sourceHandle;
           } else {
-            edgeLabel = sourceHandle;
+            // For built-in nodes
+            if (sourceNode.type === 'if') {
+              edgeLabel = sourceHandle === 'true' ? 'True' : 'False';
+            } else if (sourceNode.type === 'loop') {
+              edgeLabel = sourceHandle === 'output' ? 'Output' : 'Loop';
+            } else {
+              edgeLabel = sourceHandle;
+            }
           }
         }
       }
@@ -234,6 +233,7 @@ function FlowContent() {
         
         // Count how many outputs this node has and get handle order
         const sourceNodeTemplate = (sourceNode.data as any)?.template;
+        const hasErrorHandle = (sourceNode.data as any)?.options?.errorHandling === 'continue';
         let outputHandles: string[] = ['output'];
         
         if (sourceNode.type === 'if') {
@@ -245,6 +245,11 @@ function FlowContent() {
           outputHandles = ['output', 'loop-output'];
         } else if (sourceNodeTemplate?.visualization?.handles?.output) {
           outputHandles = sourceNodeTemplate.visualization.handles.output.map((h: any) => h.id);
+        }
+        
+        // Add error handle if present
+        if (hasErrorHandle) {
+          outputHandles.push('error');
         }
 
         const outputCount = outputHandles.length;
@@ -293,7 +298,9 @@ function FlowContent() {
         
         // Get edge label from handle
         let edgeLabel = '';
-        if (outputCount > 1 || sourceHandle !== 'output') {
+        if (sourceHandle === 'error') {
+          edgeLabel = 'Error';
+        } else if (outputCount > 1 || sourceHandle !== 'output') {
           // Get label from template or use handle name
           if (sourceNodeTemplate?.visualization?.handles?.output) {
             const handleDef = sourceNodeTemplate.visualization.handles.output.find(
@@ -356,19 +363,62 @@ function FlowContent() {
             )
           );
         } else {
-          // Add new node at random position
+          // Add new node after the last node in the workflow
+          // Find the rightmost node or the node with no outgoing edges
+          let lastNode: Node | null = null;
+          
+          // Filter out placeholder nodes
+          const realNodes = nodes.filter(n => n.type !== 'placeholder');
+          
+          if (realNodes.length === 0) {
+            // No nodes yet, place at default position
+            lastNode = null;
+          } else {
+            // Find nodes with no outgoing edges (terminal nodes)
+            const terminalNodes = realNodes.filter(node => 
+              !edges.some(edge => edge.source === node.id)
+            );
+            
+            if (terminalNodes.length > 0) {
+              // Use the rightmost terminal node
+              lastNode = terminalNodes.reduce((rightmost, node) => {
+                return (node.position.x > rightmost.position.x) ? node : rightmost;
+              });
+            } else {
+              // If all nodes have outgoing edges, just use the rightmost node
+              lastNode = realNodes.reduce((rightmost, node) => {
+                return (node.position.x > rightmost.position.x) ? node : rightmost;
+              });
+            }
+          }
+          
+          let newPosition;
+          if (lastNode) {
+            // Position the new node to the right of the last node
+            newPosition = {
+              x: lastNode.position.x + 250,
+              y: lastNode.position.y,
+            };
+          } else {
+            // Default position if no nodes exist
+            newPosition = {
+              x: 100,
+              y: 300,
+            };
+          }
+          
           const newNode: Node = {
             id: `node-${nodeIdCounter}`,
             type: nodeType,
-            position: {
-              x: Math.random() * 400 + 100,
-              y: Math.random() * 400 + 100,
-            },
+            position: newPosition,
             data: {
               label: template ? template.metadata.label : label,
               properties: template ? {} : {},
               template: template,
               onAddNode: handleAddNodeFromNode,
+              options: {
+                errorHandling: 'stop',
+              },
             },
           };
           setNodes((nds) => [...nds, newNode]);
@@ -408,6 +458,68 @@ function FlowContent() {
       }
     },
     [setNodes, selectedNode, handleAddNodeFromNode]
+  );
+
+  const updateNodeOptions = useCallback(
+    (nodeId: string, options: Record<string, any>) => {
+      const previousOptions = nodes.find(n => n.id === nodeId)?.data?.options as any;
+      const wasErrorHandleEnabled = previousOptions?.errorHandling === 'continue';
+      const isErrorHandleEnabled = options?.errorHandling === 'continue';
+      
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === nodeId) {
+            // Create a completely new node object to force React Flow to re-render
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                options,
+              },
+            };
+          }
+          return node;
+        })
+      );
+      
+      // Handle edge updates based on error handling change
+      setEdges((eds) => {
+        // If error handle was disabled, remove all edges connected to the error handle
+        if (wasErrorHandleEnabled && !isErrorHandleEnabled) {
+          return eds
+            .filter((edge) => !(edge.source === nodeId && edge.sourceHandle === 'error'))
+            .map((edge) => {
+              // Force recalculation for remaining edges from this node
+              if (edge.source === nodeId || edge.target === nodeId) {
+                return { ...edge };
+              }
+              return edge;
+            });
+        } else {
+          // Just force recalculation for edges connected to this node
+          return eds.map((edge) => {
+            if (edge.source === nodeId || edge.target === nodeId) {
+              return { ...edge };
+            }
+            return edge;
+          });
+        }
+      });
+      
+      if (selectedNode?.id === nodeId) {
+        setSelectedNode((prev) => prev ? {
+          ...prev,
+          data: { ...prev.data, options },
+        } : null);
+      }
+      
+      // Force React Flow to recalculate handle positions after state updates
+      // Use a slightly longer timeout to ensure DOM has fully updated
+      setTimeout(() => {
+        updateNodeInternals(nodeId);
+      }, 100);
+    },
+    [setNodes, setEdges, selectedNode, updateNodeInternals, nodes]
   );
 
   const updateNodeLabel = useCallback(
@@ -472,10 +584,17 @@ function FlowContent() {
       ...node,
       data: {
         ...node.data,
+        // Preserve existing data
+        label: node.data.label,
+        properties: node.data.properties,
+        options: node.data.options,
+        template: (node.data as any)?.template,
+        // Add callbacks
         onAddNode: node.type === 'placeholder' ? undefined : handleAddNodeFromNode,
         onShowPalette: node.type === 'placeholder' ? () => handleShowPalette('trigger') : undefined,
         onUpdateLabel: updateNodeLabel,
         onDeleteNode: node.type === 'placeholder' ? undefined : deleteNode,
+        // Add connection info
         hasOutgoingEdges: (node.type === 'if' || node.type === 'branch' || node.type === 'loop' || (node.data as any)?.template) ? undefined : hasOutgoingEdges,
         connectedHandles: (node.type === 'if' || node.type === 'branch' || node.type === 'loop' || (node.data as any)?.template) ? connectedHandles : undefined,
       },
@@ -674,8 +793,68 @@ function FlowContent() {
                         />
                       )
                     ) : (
-                      <div style={{ padding: '20px' }}>
-                        <p style={{ color: '#888' }}>Options will be defined here later.</p>
+                      <div className="node-options-panel">
+                        <div className="option-group">
+                          <label className="option-label">On Error:</label>
+                          <div className="option-radio-group">
+                            <label className="radio-option">
+                              <input
+                                type="radio"
+                                name="errorHandling"
+                                value="stop"
+                                checked={(selectedNode.data as any)?.options?.errorHandling === 'stop' || !(selectedNode.data as any)?.options?.errorHandling}
+                                onChange={() => {
+                                  const currentOptions = (selectedNode.data as any)?.options || {};
+                                  updateNodeOptions(selectedNode.id, {
+                                    ...currentOptions,
+                                    errorHandling: 'stop'
+                                  });
+                                }}
+                              />
+                              <span>Stop</span>
+                            </label>
+                            <label className="radio-option">
+                              <input
+                                type="radio"
+                                name="errorHandling"
+                                value="continue"
+                                checked={(selectedNode.data as any)?.options?.errorHandling === 'continue'}
+                                onChange={() => {
+                                  const currentOptions = (selectedNode.data as any)?.options || {};
+                                  updateNodeOptions(selectedNode.id, {
+                                    ...currentOptions,
+                                    errorHandling: 'continue'
+                                  });
+                                }}
+                              />
+                              <span>Continue</span>
+                            </label>
+                            <label className="radio-option">
+                              <input
+                                type="radio"
+                                name="errorHandling"
+                                value="globalError"
+                                checked={(selectedNode.data as any)?.options?.errorHandling === 'globalError'}
+                                onChange={() => {
+                                  const currentOptions = (selectedNode.data as any)?.options || {};
+                                  updateNodeOptions(selectedNode.id, {
+                                    ...currentOptions,
+                                    errorHandling: 'globalError'
+                                  });
+                                }}
+                              />
+                              <span>Trigger global error node</span>
+                            </label>
+                          </div>
+                          <p className="option-description">
+                            {(selectedNode.data as any)?.options?.errorHandling === 'continue' 
+                              ? 'A red "Error" handle will appear on the node to connect to error handling logic.'
+                              : (selectedNode.data as any)?.options?.errorHandling === 'globalError'
+                              ? 'Errors will trigger a global error handler node in the workflow.'
+                              : 'The workflow will stop execution when this node encounters an error.'
+                            }
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>

@@ -1,0 +1,94 @@
+@font-face {
+  font-family: 'node-icons';
+  src:
+    url('fonts/node-icons.ttf?yqj3tv') format('truetype'),
+    url('fonts/node-icons.woff?yqj3tv') format('woff'),
+    url('fonts/node-icons.svg?yqj3tv#node-icons') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.ni {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'node-icons' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ni-decrypt:before { content: "\e900"; color: #ff7c54; }
+.ni-ai:before { content: "\e901"; color: #2b6ed4; }
+.ni-encrypt:before { content: "\e902"; color: #62c669; }
+.ni-databricks:before { content: "\e903"; color: #fd3925; }
+.ni-claude:before { content: "\e904"; color: #d97757; }
+.ni-gemini:before { content: "\e905"; color: #886ce4; }
+.ni-openai:before { content: "\e906"; color: #74aa9c; }
+.ni-imap:before { content: "\e907"; color: #62c669; }
+.ni-branch:before { content: "\e908"; color: #f9bd46; }
+.ni-loop:before { content: "\e909"; color: #f9bd46; }
+.ni-error:before { content: "\e90a"; color: #ff7c54; }
+.ni-console:before { content: "\e90b"; color: #62c669; }
+.ni-file-agent-send:before { content: "\e90c"; color: #62c669; }
+.ni-file-agent-receive:before { content: "\e90d"; color: #62c669; }
+.ni-file-agent-alt:before { content: "\e90e"; color: #62c669; }
+.ni-file-agent:before { content: "\e90f"; color: #62c669; }
+.ni-response:before { content: "\e910"; color: #62c669; }
+.ni-cloud-file-rm:before { content: "\e911"; color: #4ac4f4; }
+.ni-cloud-file-read:before { content: "\e912"; color: #4ac4f4; }
+.ni-cloud-file-write:before { content: "\e913"; color: #4ac4f4; }
+.ni-cloud-file-ls:before { content: "\e914"; color: #4ac4f4; }
+.ni-smtp:before { content: "\e915"; color: #62c669; }
+.ni-xlsx:before { content: "\e916"; color: #62c669; }
+.ni-flat:before { content: "\e917"; color: #62c669; }
+.ni-txt:before { content: "\e918"; color: #62c669; }
+.ni-delimeter:before { content: "\e919"; color: #62c669; }
+.ni-csv:before { content: "\e91a"; color: #62c669; }
+.ni-json:before { content: "\e91b"; color: #62c669; }
+.ni-xml:before { content: "\e91c"; color: #62c669; }
+.ni-process:before { content: "\e91d"; color: #f9bd46; }
+.ni-dataservice:before { content: "\e91e"; color: #f9bd46; }
+.ni-queue-subscribe:before { content: "\e91f"; color: #886ce4; }
+.ni-queue-publish:before { content: "\e920"; color: #886ce4; }
+.ni-disk-mv:before { content: "\e921"; color: #62c669; }
+.ni-disk-rm:before { content: "\e922"; color: #62c669; }
+.ni-disk-read:before { content: "\e923"; color: #62c669; }
+.ni-disk-write:before { content: "\e924"; color: #62c669; }
+.ni-disk-ls:before { content: "\e925"; color: #62c669; }
+.ni-sftp-mv:before { content: "\e926"; color: #f9bd46; }
+.ni-sftp-rm:before { content: "\e927"; color: #f9bd46; }
+.ni-sftp-read:before { content: "\e928"; color: #f9bd46; }
+.ni-sftp-write:before { content: "\e929"; color: #f9bd46; }
+.ni-sftp-ls:before { content: "\e92a"; color: #f9bd46; }
+.ni-render:before { content: "\e92b"; color: #62c669; }
+.ni-parse:before { content: "\e92c"; color: #62c669; }
+.ni-blob-rm:before { content: "\e92d"; color: #4ac4f4; }
+.ni-blob-read:before { content: "\e92e"; color: #4ac4f4; }
+.ni-blob-write:before { content: "\e92f"; color: #4ac4f4; }
+.ni-blob-ls:before { content: "\e930"; color: #4ac4f4; }
+.ni-http-client:before { content: "\e931"; color: #4ac4f4; }
+.ni-http-server:before { content: "\e932"; color: #4ac4f4; }
+.ni-database-delete:before { content: "\e933"; color: #fb9540; }
+.ni-database-update:before { content: "\e934"; color: #fb9540; }
+.ni-database-write:before { content: "\e935"; color: #fb9540; }
+.ni-database-read:before { content: "\e936"; color: #fb9540; }
+.ni-timer:before { content: "\e937"; color: #62c669; }
+.ni-file-agent-recieve:before { content: "\e938"; color: #62c669; }
+.ni-buffer-dense:before { content: "\e939"; color: #62c669; }
+.ni-stream:before { content: "\e93a"; color: #62c669; }
+.ni-buffer:before { content: "\e93b"; color: #62c669; }
+.ni-folder:before { content: "\e93c"; color: #62c669; }
+.ni-sftp:before { content: "\e93d"; color: #f9bd46; }
+.ni-blob-delete:before { content: "\e93e"; color: #4ac4f4; }
+.ni-blob-put:before { content: "\e93f"; color: #4ac4f4; }
+.ni-blob-get:before { content: "\e940"; color: #4ac4f4; }
+.ni-blob-list:before { content: "\e941"; color: #4ac4f4; }
+.ni-mapping:before { content: "\e95e"; color: #62c669; }
+

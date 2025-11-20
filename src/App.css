@@ -276,3 +276,54 @@
   fill: #1e1e1e !important;
   fill-opacity: 0.9 !important;
 }
+
+/* Node Options Panel */
+.node-options-panel {
+  padding: 20px;
+}
+
+.option-group {
+  margin-bottom: 24px;
+}
+
+.option-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-bottom: 12px;
+}
+
+.option-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #ccc;
+  font-size: 14px;
+}
+
+.radio-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #4a9eff;
+}
+
+.radio-option:hover {
+  color: #e0e0e0;
+}
+
+.option-description {
+  font-size: 12px;
+  color: #888;
+  margin: 8px 0 0 0;
+  line-height: 1.5;
+}

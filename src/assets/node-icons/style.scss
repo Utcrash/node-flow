@@ -1,0 +1,428 @@
+@use "variables" as *;
+
+@font-face {
+  font-family: '#{$icomoon-font-family}';
+  src:
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.ttf?yqj3tv') format('truetype'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.woff?yqj3tv') format('woff'),
+    url('#{$icomoon-font-path}/#{$icomoon-font-family}.svg?yqj3tv##{$icomoon-font-family}') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.ni {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: '#{$icomoon-font-family}' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ni-decrypt {
+  &:before {
+    content: $ni-decrypt;     
+    color: #ff7c54;
+  }
+}
+.ni-ai {
+  &:before {
+    content: $ni-ai;     
+    color: #2b6ed4;
+  }
+}
+.ni-encrypt {
+  &:before {
+    content: $ni-encrypt;     
+    color: #62c669;
+  }
+}
+.ni-databricks {
+  &:before {
+    content: $ni-databricks;     
+    color: #fd3925;
+  }
+}
+.ni-claude {
+  &:before {
+    content: $ni-claude;     
+    color: #d87757;
+  }
+}
+.ni-gemini {
+  &:before {
+    content: $ni-gemini;     
+    color: #3097dd;
+  }
+}
+.ni-openai {
+  &:before {
+    content: $ni-openai; 
+  }
+}
+.ni-imap {
+  &:before {
+    content: $ni-imap;     
+    color: #194f82;
+  }
+}
+.ni-branch {
+  &:before {
+    content: $ni-branch;     
+    color: #a1b343;
+  }
+}
+.ni-loop {
+  &:before {
+    content: $ni-loop;     
+    color: #f7931e;
+  }
+}
+.ni-error {
+  &:before {
+    content: $ni-error;     
+    color: #c1272d;
+  }
+}
+.ni-console {
+  &:before {
+    content: $ni-console;     
+    color: #666;
+  }
+}
+.ni-file-agent-send {
+  &:before {
+    content: $ni-file-agent-send;     
+    color: #008ac8;
+  }
+}
+.ni-file-agent-receive {
+  &:before {
+    content: $ni-file-agent-receive;     
+    color: #4e9157;
+  }
+}
+.ni-file-agent-alt {
+  &:before {
+    content: $ni-file-agent-alt;     
+    color: #4e9157;
+  }
+}
+.ni-file-agent {
+  &:before {
+    content: $ni-file-agent;     
+    color: #6372c1;
+  }
+}
+.ni-response {
+  &:before {
+    content: $ni-response;     
+    color: #7ac943;
+  }
+}
+.ni-cloud-file-rm {
+  &:before {
+    content: $ni-cloud-file-rm;     
+    color: #c1272d;
+  }
+}
+.ni-cloud-file-read {
+  &:before {
+    content: $ni-cloud-file-read;     
+    color: #22b573;
+  }
+}
+.ni-cloud-file-write {
+  &:before {
+    content: $ni-cloud-file-write;     
+    color: #f7931e;
+  }
+}
+.ni-cloud-file-ls {
+  &:before {
+    content: $ni-cloud-file-ls;     
+    color: #2b6ed4;
+  }
+}
+.ni-smtp {
+  &:before {
+    content: $ni-smtp;     
+    color: #2b6ed4;
+  }
+}
+.ni-xlsx {
+  &:before {
+    content: $ni-xlsx;     
+    color: #56b746;
+  }
+}
+.ni-flat {
+  &:before {
+    content: $ni-flat;     
+    color: #624971;
+  }
+}
+.ni-txt {
+  &:before {
+    content: $ni-txt;     
+    color: #6372c1;
+  }
+}
+.ni-delimeter {
+  &:before {
+    content: $ni-delimeter;     
+    color: #008ac8;
+  }
+}
+.ni-csv {
+  &:before {
+    content: $ni-csv;     
+    color: #a1b343;
+  }
+}
+.ni-json {
+  &:before {
+    content: $ni-json;     
+    color: #ff7c54;
+  }
+}
+.ni-xml {
+  &:before {
+    content: $ni-xml;     
+    color: #4e9157;
+  }
+}
+.ni-process {
+  &:before {
+    content: $ni-process;     
+    color: #2e3192;
+  }
+}
+.ni-dataservice {
+  &:before {
+    content: $ni-dataservice;     
+    color: #0071bc;
+  }
+}
+.ni-queue-subscribe {
+  &:before {
+    content: $ni-queue-subscribe;     
+    color: #6372c1;
+  }
+}
+.ni-queue-publish {
+  &:before {
+    content: $ni-queue-publish;     
+    color: #4e9157;
+  }
+}
+.ni-disk-mv {
+  &:before {
+    content: $ni-disk-mv;     
+    color: #6372c1;
+  }
+}
+.ni-disk-rm {
+  &:before {
+    content: $ni-disk-rm;     
+    color: #c1272d;
+  }
+}
+.ni-disk-read {
+  &:before {
+    content: $ni-disk-read;     
+    color: #22b573;
+  }
+}
+.ni-disk-write {
+  &:before {
+    content: $ni-disk-write;     
+    color: #f7931e;
+  }
+}
+.ni-disk-ls {
+  &:before {
+    content: $ni-disk-ls;     
+    color: #2b6ed4;
+  }
+}
+.ni-sftp-mv {
+  &:before {
+    content: $ni-sftp-mv;     
+    color: #6372c1;
+  }
+}
+.ni-sftp-rm {
+  &:before {
+    content: $ni-sftp-rm;     
+    color: #c1272d;
+  }
+}
+.ni-sftp-read {
+  &:before {
+    content: $ni-sftp-read;     
+    color: #22b573;
+  }
+}
+.ni-sftp-write {
+  &:before {
+    content: $ni-sftp-write;     
+    color: #f7931e;
+  }
+}
+.ni-sftp-ls {
+  &:before {
+    content: $ni-sftp-ls;     
+    color: #2b6ed4;
+  }
+}
+.ni-render {
+  &:before {
+    content: $ni-render;     
+    color: #603813;
+  }
+}
+.ni-parse {
+  &:before {
+    content: $ni-parse;     
+    color: #662d91;
+  }
+}
+.ni-blob-rm {
+  &:before {
+    content: $ni-blob-rm;     
+    color: #c1272d;
+  }
+}
+.ni-blob-read {
+  &:before {
+    content: $ni-blob-read;     
+    color: #22b573;
+  }
+}
+.ni-blob-write {
+  &:before {
+    content: $ni-blob-write;     
+    color: #f7931e;
+  }
+}
+.ni-blob-ls {
+  &:before {
+    content: $ni-blob-ls;     
+    color: #2b6ed4;
+  }
+}
+.ni-http-client {
+  &:before {
+    content: $ni-http-client;     
+    color: #39b54a;
+  }
+}
+.ni-http-server {
+  &:before {
+    content: $ni-http-server;     
+    color: #3fa9f5;
+  }
+}
+.ni-database-delete {
+  &:before {
+    content: $ni-database-delete;     
+    color: #c1272d;
+  }
+}
+.ni-database-update {
+  &:before {
+    content: $ni-database-update;     
+    color: #f7931e;
+  }
+}
+.ni-database-write {
+  &:before {
+    content: $ni-database-write;     
+    color: #0071bc;
+  }
+}
+.ni-database-read {
+  &:before {
+    content: $ni-database-read;     
+    color: #22b573;
+  }
+}
+.ni-timer {
+  &:before {
+    content: $ni-timer;     
+    color: #179400;
+  }
+}
+.ni-file-agent-recieve {
+  &:before {
+    content: $ni-file-agent-recieve;     
+    color: #4e9157;
+  }
+}
+.ni-buffer-dense {
+  &:before {
+    content: $ni-buffer-dense; 
+  }
+}
+.ni-stream {
+  &:before {
+    content: $ni-stream; 
+  }
+}
+.ni-buffer {
+  &:before {
+    content: $ni-buffer; 
+  }
+}
+.ni-folder {
+  &:before {
+    content: $ni-folder;     
+    color: #fec928;
+  }
+}
+.ni-sftp {
+  &:before {
+    content: $ni-sftp;     
+    color: #fec866;
+  }
+}
+.ni-blob-delete {
+  &:before {
+    content: $ni-blob-delete;     
+    color: #c1272d;
+  }
+}
+.ni-blob-put {
+  &:before {
+    content: $ni-blob-put;     
+    color: #0071bc;
+  }
+}
+.ni-blob-get {
+  &:before {
+    content: $ni-blob-get;     
+    color: #22b573;
+  }
+}
+.ni-blob-list {
+  &:before {
+    content: $ni-blob-list;     
+    color: #662d91;
+  }
+}
+
+.ni-mapping {
+  &:before {
+    content: $ni-mapping;     
+    color: #000;
+  }
+}
+

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { loadTemplates } from '../utils/templateLoader';
+import { getIconFromClassName } from '../utils/iconMapper';
 import './NodePalette.css';
 
 interface NodePaletteProps {
@@ -173,7 +174,7 @@ function NodePalette({ onAddNode, highlighted = false, filterMode = 'all' }: Nod
                         title={node.description || node.label}
                       >
                         <div className="node-palette-item-header">
-                          <span className="node-palette-icon">{node.icon}</span>
+                          <span className="node-palette-icon ni">{getIconFromClassName(node.icon)}</span>
                           <span className="node-palette-label">{node.label}</span>
                         </div>
                         {node.description && (
