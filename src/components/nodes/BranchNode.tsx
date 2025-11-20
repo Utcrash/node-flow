@@ -32,7 +32,10 @@ function BranchNode({ data, selected, id }: BranchNodeProps) {
       </div>
       {Array.from({ length: branches }).map((_, i) => {
         const handleId = `output-${i}`;
-        const topPosition = `${((i + 1) * 100) / (branches + 1)}%`;
+        // Increased spacing: use 20%-80% range instead of evenly distributed
+        const topPosition = branches === 1 
+          ? '50%' 
+          : `${20 + (i * 60 / (branches - 1))}%`;
         const isConnected = data.connectedHandles?.has(handleId);
         
         return (

@@ -33,7 +33,7 @@ function IfNode({ data, selected, id }: IfNodeProps) {
         type="source"
         position={Position.Right}
         id="true"
-        style={{ top: '30%' }}
+        style={{ top: '25%' }}
       >
         <span className="handle-label">True</span>
       </Handle>
@@ -41,16 +41,16 @@ function IfNode({ data, selected, id }: IfNodeProps) {
         type="source"
         position={Position.Right}
         id="false"
-        style={{ top: '70%' }}
+        style={{ top: '75%' }}
       >
         <span className="handle-label">False</span>
       </Handle>
       {data.onAddNode && !data.connectedHandles?.has('true') && (
         <>
-          <div className="node-add-arm" style={{ top: '30%' }} />
+          <div className="node-add-arm" style={{ top: '25%' }} />
           <button
             className="node-add-button"
-            style={{ top: '30%' }}
+            style={{ top: '25%' }}
             onClick={(e) => {
               e.stopPropagation();
               const rect = e.currentTarget.getBoundingClientRect();
@@ -64,10 +64,10 @@ function IfNode({ data, selected, id }: IfNodeProps) {
       )}
       {data.onAddNode && !data.connectedHandles?.has('false') && (
         <>
-          <div className="node-add-arm" style={{ top: '70%' }} />
+          <div className="node-add-arm" style={{ top: '75%' }} />
           <button
             className="node-add-button"
-            style={{ top: '70%' }}
+            style={{ top: '75%' }}
             onClick={(e) => {
               e.stopPropagation();
               const rect = e.currentTarget.getBoundingClientRect();

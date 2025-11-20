@@ -30,14 +30,14 @@ function LoopNode({ data, selected, id }: LoopNodeProps) {
           <div className="node-info">{data.properties.loopType}</div>
         )}
       </div>
-      <Handle type="source" position={Position.Right} id="output" />
-      <Handle type="source" position={Position.Right} id="loop-output" style={{ top: '60%' }} />
+      <Handle type="source" position={Position.Right} id="output" style={{ top: '35%' }} />
+      <Handle type="source" position={Position.Right} id="loop-output" style={{ top: '65%' }} />
       {data.onAddNode && !data.connectedHandles?.has('output') && (
         <>
-          <div className="node-add-arm" style={{ top: '50%' }} />
+          <div className="node-add-arm" style={{ top: '35%' }} />
           <button
             className="node-add-button"
-            style={{ top: '50%' }}
+            style={{ top: '35%' }}
             onClick={(e) => {
               e.stopPropagation();
               const rect = e.currentTarget.getBoundingClientRect();
@@ -51,10 +51,10 @@ function LoopNode({ data, selected, id }: LoopNodeProps) {
       )}
       {data.onAddNode && !data.connectedHandles?.has('loop-output') && (
         <>
-          <div className="node-add-arm" style={{ top: '60%' }} />
+          <div className="node-add-arm" style={{ top: '65%' }} />
           <button
             className="node-add-button"
-            style={{ top: '60%' }}
+            style={{ top: '65%' }}
             onClick={(e) => {
               e.stopPropagation();
               const rect = e.currentTarget.getBoundingClientRect();

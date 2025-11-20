@@ -11,6 +11,8 @@ import {
 } from '@xyflow/react';
 import type { Node, Edge, Connection, NodeTypes } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faLayerGroup, faTimes } from '@fortawesome/free-solid-svg-icons';
 import TriggerNode from './components/nodes/TriggerNode';
 import FilterNode from './components/nodes/FilterNode';
 import BranchNode from './components/nodes/BranchNode';
@@ -124,10 +126,10 @@ function FlowContent() {
       const newEdge = {
         ...params,
         label: edgeLabel,
-        labelStyle: { fill: '#888', fontWeight: 500, fontSize: 12 },
-        labelBgStyle: { fill: '#1e1e1e', fillOpacity: 0.9 },
-        labelBgPadding: [4, 8] as [number, number],
-        labelBgBorderRadius: 4,
+        labelStyle: { fill: '#888', fontWeight: 500, fontSize: 6 },
+        labelBgStyle: { fill: '#1e1e1e', fillOpacity: 0.7 },
+        labelBgPadding: [1, 2] as [number, number],
+        labelBgBorderRadius: 1,
       };
 
       setEdges((eds) => addEdge(newEdge, eds));
@@ -318,10 +320,10 @@ function FlowContent() {
           sourceHandle: sourceHandle,
           targetHandle: 'input',
           label: edgeLabel,
-          labelStyle: { fill: '#888', fontWeight: 500, fontSize: 12 },
-          labelBgStyle: { fill: '#1e1e1e', fillOpacity: 0.9 },
-          labelBgPadding: [4, 8] as [number, number],
-          labelBgBorderRadius: 4,
+          labelStyle: { fill: '#888', fontWeight: 500, fontSize: 6 },
+          labelBgStyle: { fill: '#1e1e1e', fillOpacity: 0.7 },
+          labelBgPadding: [1, 2] as [number, number],
+          labelBgBorderRadius: 1,
         };
         setEdges((eds) => [...eds, newEdge]);
         
@@ -408,6 +410,43 @@ function FlowContent() {
     [setNodes, selectedNode, handleAddNodeFromNode]
   );
 
+  const updateNodeLabel = useCallback(
+    (nodeId: string, newLabel: string) => {
+      setNodes((nds) =>
+        nds.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, label: newLabel } }
+            : node
+        )
+      );
+      if (selectedNode?.id === nodeId) {
+        setSelectedNode({
+          ...selectedNode,
+          data: { ...selectedNode.data, label: newLabel },
+        });
+      }
+    },
+    [setNodes, selectedNode]
+  );
+
+  const deleteNode = useCallback(
+    (nodeId: string) => {
+      // Remove the node
+      setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+      
+      // Remove any edges connected to this node
+      setEdges((eds) => 
+        eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
+      );
+      
+      // Close properties panel if this node was selected
+      if (selectedNode?.id === nodeId) {
+        setSelectedNode(null);
+      }
+    },
+    [setNodes, setEdges, selectedNode]
+  );
+
   // Calculate which handles have outgoing edges (for nodes with multiple outputs)
   const handlesWithOutgoingEdges = new Map<string, Set<string>>();
   edges.forEach((edge) => {
@@ -435,6 +474,8 @@ function FlowContent() {
         ...node.data,
         onAddNode: node.type === 'placeholder' ? undefined : handleAddNodeFromNode,
         onShowPalette: node.type === 'placeholder' ? () => handleShowPalette('trigger') : undefined,
+        onUpdateLabel: updateNodeLabel,
+        onDeleteNode: node.type === 'placeholder' ? undefined : deleteNode,
         hasOutgoingEdges: (node.type === 'if' || node.type === 'branch' || node.type === 'loop' || (node.data as any)?.template) ? undefined : hasOutgoingEdges,
         connectedHandles: (node.type === 'if' || node.type === 'branch' || node.type === 'loop' || (node.data as any)?.template) ? connectedHandles : undefined,
       },
@@ -519,7 +560,10 @@ function FlowContent() {
     });
 
     setNodes(layoutNodes);
-  }, [nodes, edges, setNodes]);
+    
+    // Fit view after layout
+    setTimeout(() => fitView({ padding: 0.2, duration: 300 }), 50);
+  }, [nodes, edges, setNodes, fitView]);
 
   return (
     <div className="app-container">
@@ -530,18 +574,14 @@ function FlowContent() {
           onClick={() => handleShowPalette('all')}
           title="Add Node"
         >
-          +
+          <FontAwesomeIcon icon={faPlus} />
         </button>
         <button
           className="format-button-float"
           onClick={handleFormatNodes}
           title="Format / Auto-layout nodes"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-            <line x1="12" y1="22.08" x2="12" y2="12"/>
-          </svg>
+          <FontAwesomeIcon icon={faLayerGroup} />
         </button>
       </div>
 
@@ -575,7 +615,7 @@ function FlowContent() {
         <div className="properties-modal-overlay" onClick={closePropertiesModal}>
           <div className="properties-modal" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close-button" onClick={closePropertiesModal}>
-              ×
+              <FontAwesomeIcon icon={faTimes} />
             </button>
             
             <div className="modal-content">

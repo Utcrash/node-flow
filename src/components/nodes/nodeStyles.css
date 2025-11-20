@@ -9,18 +9,114 @@
 }
 
 .node {
-  background: white;
-  border: 2px solid var(--border-color, #555);
+  background: #fafafa; /* Very light gray background */
+  border: 2px solid var(--border-color, #ccc);
   border-radius: var(--node-border-radius);
-  min-width: 120px;
-  max-width: 180px;
-  height: 60px; /* Increased from 48px for better handle spacing */
+  min-width: 90px; /* 75% of 120px */
+  max-width: 135px; /* 75% of 180px */
+  height: auto; /* Changed to auto for flexible height */
+  min-height: 45px; /* 75% of 60px */
   position: relative;
   box-shadow: var(--node-shadow);
   display: flex;
   flex-direction: column;
   transition: var(--node-transition);
   overflow: visible; /* Changed: Prevent clipping handles */
+}
+
+/* Action icons container - appears on hover */
+.node-action-icons {
+  position: absolute;
+  top: -16px;
+  right: -8px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+
+/* Extended hover area - creates invisible bridge between node and icons */
+.node-action-icons::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: -20px; /* Extends down to cover the gap */
+  left: -20px; /* Extends left to cover area */
+  pointer-events: auto;
+}
+
+.node:hover .node-action-icons {
+  opacity: 1;
+}
+
+/* Edit icon - extremely small and minimal */
+.node-edit-icon {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 6px;
+  color: white;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s, transform 0.2s;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.node-edit-icon:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+/* Delete icon - extremely small and minimal */
+.node-delete-icon {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 6px;
+  color: #ff6b6b;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s, transform 0.2s;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.node-delete-icon:hover {
+  opacity: 1;
+  transform: scale(1.2);
+  color: #ff5252;
+}
+
+/* Node content section: Icon and label with white/light gray background */
+.node-content-section {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* 75% of 8px */
+  padding: 6px 7px; /* 75% of 8px 10px */
+  background: #fafafa; /* Very light gray, almost white */
+  flex: 1; /* Expand to fill remaining space */
+  border-radius: var(--node-border-radius);
+}
+
+/* Input field for editing node label */
+.node-title-input {
+  font-weight: 600;
+  font-size: 9px;
+  color: #333;
+  border: 1px solid #4a9eff;
+  border-radius: 3px;
+  padding: 2px 4px;
+  outline: none;
+  background: white;
+  flex: 1;
+  font-family: inherit;
+}
+
+.node-title-input:focus {
+  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
 }
 
 .node:hover {
@@ -55,20 +151,22 @@
   border-color: rgba(25, 118, 210, 0.4);
 }
 
+
+/* Legacy node-header for built-in nodes */
 .node-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: 4px; /* 75% of 6px */
+  padding: 4px 7px; /* 75% of 6px 10px */
   background: linear-gradient(135deg, var(--header-bg, #f5f5f5) 0%, #fafafa 100%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  height: 30px; /* ~18px content + padding */
+  height: 22px; /* 75% of 30px */
   flex-shrink: 0;
   border-radius: var(--node-border-radius) var(--node-border-radius) 0 0;
 }
 
 .node-icon {
-  font-size: 14px;
+  font-size: 12px; /* 75% of 16px */
   line-height: 1;
   display: inline-block;
   font-style: normal;
@@ -80,21 +178,27 @@
 
 .node-title {
   font-weight: 600;
-  font-size: 11px;
-  color: #333;
+  font-size: 9px; /* 75% of 12px */
+  color: #333; /* Dark text on light background */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
 }
 
+/* Title color for legacy nodes (non-template) */
+.node-header .node-title {
+  color: #333;
+  font-size: 8px; /* 75% of ~11px */
+}
+
 .node-body {
-  padding: 4px 10px;
+  padding: 3px 7px; /* 75% of 4px 10px */
   flex: 1;
   display: flex;
   align-items: center;
   overflow: hidden;
-  font-size: 9px;
+  font-size: 7px; /* 75% of 9px */
 }
 
 .node-info {
