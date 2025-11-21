@@ -41,6 +41,19 @@ const getCenterPosition = () => {
   return { x: 400, y: 300 };
 };
 
+// Convert label to snake_case for node IDs
+const toSnakeCase = (str: string): string => {
+  return str
+    .trim()
+    .replace(/[\s\-\/]+/g, '_') // Replace spaces, hyphens, and slashes with underscores first
+    .replace(/([a-z])([A-Z])/g, '$1_$2') // Add underscore between lowercase and uppercase (camelCase)
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2') // Handle acronyms followed by words (HTTPServer -> HTTP_Server)
+    .replace(/[^\w]+/g, '') // Remove non-word characters
+    .replace(/_+/g, '_') // Replace multiple underscores with single underscore
+    .replace(/^_|_$/g, '') // Remove leading/trailing underscores
+    .toLowerCase();
+};
+
 const initialNodes: Node[] = [
   {
     id: 'placeholder-0',
@@ -278,15 +291,18 @@ function FlowContent() {
         }
         // For single output, keep same Y position (straight line)
 
+        const nodeLabel = template ? template.metadata.label : label;
+        const nodeId = `${toSnakeCase(nodeLabel)}_${nodeIdCounter}`;
+        
         const newNode: Node = {
-          id: `node-${nodeIdCounter}`,
+          id: nodeId,
           type: nodeType,
           position: {
             x: (sourceNode.position.x || 0) + horizontalSpacing,
             y: yPosition,
           },
           data: {
-            label: template ? template.metadata.label : label,
+            label: nodeLabel,
             properties: template ? {} : {},
             template: template,
             onAddNode: handleAddNodeFromNode,
@@ -346,22 +362,38 @@ function FlowContent() {
         const placeholderNode = nodes.find((n) => n.type === 'placeholder');
         
         if (placeholderNode) {
-          // Replace placeholder node
+          // Replace placeholder node with a new node that has a proper ID
+          const nodeLabel = template ? template.metadata.label : label;
+          const nodeId = `${toSnakeCase(nodeLabel)}_${nodeIdCounter}`;
+          
           const updatedNode: Node = {
             ...placeholderNode,
+            id: nodeId,
             type: nodeType,
             data: {
-              label: template ? template.metadata.label : label,
+              label: nodeLabel,
               properties: template ? {} : {},
               template: template,
               onAddNode: handleAddNodeFromNode,
             },
           };
+          
+          // Update edges that reference the placeholder
+          setEdges((eds) =>
+            eds.map((edge) => ({
+              ...edge,
+              source: edge.source === placeholderNode.id ? nodeId : edge.source,
+              target: edge.target === placeholderNode.id ? nodeId : edge.target,
+            }))
+          );
+          
           setNodes((nds) =>
             nds.map((node) =>
               node.id === placeholderNode.id ? updatedNode : node
             )
           );
+          
+          setNodeIdCounter((prev) => prev + 1);
         } else {
           // Add new node after the last node in the workflow
           // Find the rightmost node or the node with no outgoing edges
@@ -407,12 +439,15 @@ function FlowContent() {
             };
           }
           
+          const nodeLabel = template ? template.metadata.label : label;
+          const nodeId = `${toSnakeCase(nodeLabel)}_${nodeIdCounter}`;
+          
           const newNode: Node = {
-            id: `node-${nodeIdCounter}`,
+            id: nodeId,
             type: nodeType,
             position: newPosition,
             data: {
-              label: template ? template.metadata.label : label,
+              label: nodeLabel,
               properties: template ? {} : {},
               template: template,
               onAddNode: handleAddNodeFromNode,
@@ -742,17 +777,93 @@ function FlowContent() {
               <div className="modal-panel input-panel">
                 <h3>Input</h3>
                 <div className="panel-body">
-                  <p className="panel-placeholder">Input from previous nodes</p>
-                  {/* Dynamic textareas based on previous nodes will go here */}
+                  {(() => {
+                    // Recursively get all upstream nodes (not just immediate parents)
+                    const getAllUpstreamNodes = (nodeId: string, visited = new Set<string>()): Node[] => {
+                      if (visited.has(nodeId)) return [];
+                      visited.add(nodeId);
+                      
+                      const incomingEdges = edges.filter(e => e.target === nodeId);
+                      const directParents = incomingEdges
+                        .map(edge => nodes.find(n => n.id === edge.source))
+                        .filter(Boolean) as Node[];
+                      
+                      const allUpstream: Node[] = [...directParents];
+                      directParents.forEach(parent => {
+                        const parentUpstream = getAllUpstreamNodes(parent.id, visited);
+                        allUpstream.push(...parentUpstream);
+                      });
+                      
+                      return allUpstream;
+                    };
+
+                    const previousNodes = getAllUpstreamNodes(selectedNode.id);
+                    
+                    // Remove duplicates and filter out placeholder nodes
+                    const uniquePreviousNodes = Array.from(
+                      new Map(previousNodes.map(node => [node.id, node])).values()
+                    ).filter(node => node.type !== 'placeholder' && !node.id.startsWith('placeholder-'));
+
+                    if (uniquePreviousNodes.length === 0) {
+                      return <p className="panel-placeholder">No previous nodes connected</p>;
+                    }
+
+                    return (
+                      <div className="previous-nodes-list">
+                        {uniquePreviousNodes.map((prevNode: any) => {
+                          const template = (prevNode.data as any)?.template;
+                          const nodeId = prevNode.id; // Use unique node ID for expressions
+                          
+                          // Get output parameters from template
+                          // If direction is not specified, treat as output (backward compatibility)
+                          const outputParams = template?.parameters?.filter((p: any) => 
+                            !p.direction || p.direction === 'output'
+                          ) || [];
+                          
+                          return (
+                            <div key={prevNode.id} className="previous-node-section">
+                              <div className="previous-node-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <strong>{template?.metadata?.label || prevNode.type}</strong>
+                                <span style={{ fontSize: '11px', color: '#888' }}>
+                                  {nodeId}
+                                </span>
+                              </div>
+                              {outputParams.length > 0 ? (
+                                <div className="output-params-list">
+                                  {outputParams.map((param: any) => (
+                                    <div
+                                      key={param.name}
+                                      className="output-param-item"
+                                      draggable
+                                      onDragStart={(e) => {
+                                        e.dataTransfer.setData('text/plain', `$json(${nodeId}.${param.name})`);
+                                        e.dataTransfer.effectAllowed = 'copy';
+                                      }}
+                                      title={`Drag to use as JSON path: $json(${nodeId}.${param.name})`}
+                                    >
+                                      <span className="param-icon">⋮⋮</span>
+                                      <span className="param-name">{param.name}</span>
+                                      <span className="param-type">{param.type}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="no-outputs">No output parameters defined</p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
               {/* Properties Panel */}
               <div className="modal-panel properties-center">
-                <h3>
-                  Node Properties
+                <h3 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Node Properties</span>
                   <span style={{ 
-                    marginLeft: '12px', 
                     fontSize: '13px', 
                     color: '#888',
                     fontWeight: 'normal'

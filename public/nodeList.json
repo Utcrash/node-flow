@@ -9746,10 +9746,10 @@
                     "id": "data",
                     "name": "data",
                     "label": "Data",
-                    "type": "string",
-                    "inputType": "text",
+                    "type": "object",
+                    "inputType": "textarea",
                     "required": false,
-                    "defaultValue": "",
+                    "defaultValue": "{}",
                     "description": "Output parameter: data"
                 }
             ]
