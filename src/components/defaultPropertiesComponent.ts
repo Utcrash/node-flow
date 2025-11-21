@@ -13,6 +13,11 @@ function NodePropertiesPanel({ node, properties, onUpdateProperties }) {
         initial[param.name] = typeof properties[param.name] === 'string' 
           ? properties[param.name] 
           : JSON.stringify(properties[param.name] || {}, null, 2);
+      } else if (param.inputType === 'select' && param.multiSelect) {
+        // For multiselect, ensure we have an array
+        initial[param.name] = Array.isArray(properties[param.name]) 
+          ? properties[param.name] 
+          : (properties[param.name] ? [properties[param.name]] : []);
       } else {
         initial[param.name] = properties[param.name] ?? param.defaultValue ?? '';
       }
@@ -28,6 +33,11 @@ function NodePropertiesPanel({ node, properties, onUpdateProperties }) {
         updated[param.name] = typeof properties[param.name] === 'string' 
           ? properties[param.name] 
           : JSON.stringify(properties[param.name] || {}, null, 2);
+      } else if (param.inputType === 'select' && param.multiSelect) {
+        // For multiselect, ensure we have an array
+        updated[param.name] = Array.isArray(properties[param.name]) 
+          ? properties[param.name] 
+          : (properties[param.name] ? [properties[param.name]] : []);
       } else {
         updated[param.name] = properties[param.name] ?? param.defaultValue ?? '';
       }
@@ -82,30 +92,86 @@ function NodePropertiesPanel({ node, properties, onUpdateProperties }) {
         );
       
       case 'select':
-        return (
-          <select
-            value={value}
-            onChange={(e) => {
-              setParamValues({ ...paramValues, [param.name]: e.target.value });
-              handleUpdate(param.name, e.target.value);
-            }}
-            style={{
-              width: '100%',
+        if (param.multiSelect) {
+          // Multi-select: render as a list of checkboxes
+          const selectedValues = Array.isArray(value) ? value : [];
+          return (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
               padding: '8px',
               border: '1px solid #444',
               borderRadius: '4px',
               background: '#2a2a2a',
-              color: '#e0e0e0',
-            }}
-          >
-            <option value="">Select...</option>
-            {param.options?.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        );
+              maxHeight: '200px',
+              overflowY: 'auto',
+            }}>
+              {param.options?.map((option) => (
+                <label
+                  key={option.value}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: '#e0e0e0',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    borderRadius: '4px',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#333'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedValues.includes(option.value)}
+                    onChange={(e) => {
+                      const newValues = e.target.checked
+                        ? [...selectedValues, option.value]
+                        : selectedValues.filter(v => v !== option.value);
+                      setParamValues({ ...paramValues, [param.name]: newValues });
+                      handleUpdate(param.name, newValues);
+                    }}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      cursor: 'pointer',
+                      accentColor: '#4a9eff',
+                    }}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </div>
+          );
+        } else {
+          // Single select: render as dropdown
+          return (
+            <select
+              value={value}
+              onChange={(e) => {
+                setParamValues({ ...paramValues, [param.name]: e.target.value });
+                handleUpdate(param.name, e.target.value);
+              }}
+              style={{
+                width: '100%',
+                padding: '8px',
+                border: '1px solid #444',
+                borderRadius: '4px',
+                background: '#2a2a2a',
+                color: '#e0e0e0',
+              }}
+            >
+              <option value="">Select...</option>
+              {param.options?.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          );
+        }
       
       case 'checkbox':
         return (

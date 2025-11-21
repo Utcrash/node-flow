@@ -127,11 +127,22 @@
                     "name": "method",
                     "label": "Method",
                     "type": "string",
-                    "inputType": "text",
+                    "inputType": "select",
                     "required": false,
                     "defaultValue": "",
-                    "description": "method parameter for HTTP Server"
-                },
+                    "description": "method parameter for HTTP Server",
+                    "options": [
+                      {
+                        "label": "GET",
+                        "value": "GET"
+                      },
+                      {
+                        "label": "POST",
+                        "value": "POST"
+                      }
+                    ],
+                    "multiSelect": true
+                  },
                 {
                     "id": "path",
                     "name": "path",
